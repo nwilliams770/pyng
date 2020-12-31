@@ -16,21 +16,18 @@ from match.constants import *
 
 
 class Match():
-  def __init__(self, match_type):
+  def __init__(self, match_type, multiplayer):
+    self.state = None
     self.match_type = match_type
 
     self.should_close = False
+    self.game_over = False
 
-    self.state = None
-    self.is_primary = True  # TODO - base this off match_type
-    self.multiplayer = None  # TODO - grab this from match_type if it exists
+    self.multiplayer = multiplayer
+    self.is_primary = multiplayer.is_primary
 
     if self.is_primary:
       self.engine = engine.Engine()
-
-  @property
-  def game_over(self):
-    return False
 
   def update(self):
     if self.is_primary:

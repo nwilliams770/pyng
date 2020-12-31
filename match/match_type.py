@@ -14,5 +14,4 @@ class LocalAI(MatchType):
 
 
 class LANMultiplayer(MatchType):
-  def __init__(self, host):
-    self.host = host
+  pass

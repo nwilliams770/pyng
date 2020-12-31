@@ -18,15 +18,16 @@ import pyxel
 from match import match_type
 
 class MainMenu():
-  def __init__(self):
+  def __init__(self, multiplayer):
     self.i = 0
-    pass
+    self.multiplayer = multiplayer
 
   def update(self):
     self.i += 1
 
     if pyxel.btnp(pyxel.KEY_ENTER):
-      self.match_type = match_type.LocalMultiplayer()
+      self.multiplayer.connect(host='127.0.0.1', port=5001 if self.multiplayer.port == 5002 else 5002)
+      self.match_type = match_type.LANMultiplayer()
     else:
       self.match_type = None
 

@@ -3,7 +3,6 @@ import pyxel
 from match.constants import *
 
 def draw_from_state(state):
-  print("drawing ", state)
   pyxel.rect(0, 0, COURT_WIDTH, COURT_HEIGHT, COURT_COLOR)
 
   for i in range(0, COURT_HEIGHT, 3):
