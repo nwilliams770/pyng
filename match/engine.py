@@ -19,7 +19,7 @@ class Engine():
     self.post_score_delay = PRE_START_FRAME_DELAY
     self.last_scorer = None
 
-  def update(p1_input, p2_input):
+  def update(self, p1_input, p2_input):
     self.update_match(p1_input, p2_input)
     return {
       'state': 'playing', # countdown, playing, end

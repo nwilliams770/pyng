@@ -40,7 +40,7 @@ class Match():
 
   def update_as_primary(self):
     p1_input, p2_input = self.get_inputs()
-    self.state = self.engine.update_match(p1_input, p2_input)
+    self.state = self.engine.update(p1_input, p2_input)
     # self.multiplayer.send(state) TODO
 
   def update_as_secondary(self):
