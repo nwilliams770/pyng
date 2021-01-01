@@ -22,7 +22,7 @@ class Engine():
   def update(self, p1_input, p2_input):
     self.update_match(p1_input, p2_input)
     return {
-      'state': 'playing', # countdown, playing, end
+      'phase': 'playing',
       'p1_y': self.player_one.frame.y,
       'p1_score': self.player_one.score,
       'p2_y': self.player_two.frame.y,

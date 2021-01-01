@@ -4,14 +4,16 @@ import select
 import json
 import struct
 
+
+class NoMessageError(Exception):
+  pass
+
 class Multiplayer:
   def __init__(self, port):
     self.port = port
     self.server = MultiplayerServer(port=port)
     self.client = MultiplayerClient()
     self._is_primary = True
-
-    self.server.start()
 
   @property
   def is_primary(self):
@@ -20,6 +22,18 @@ class Multiplayer:
   def connect(self, host, port):
     self.client.connect(host, port)
     self._is_primary = False
+
+  def send(self, message):
+    if self.is_primary:
+      self.server.send(message)
+    else:
+      self.client.send(message)
+
+  def check_for_received_message(self):
+    if self.is_primary:
+      return self.server.check_for_received_message()
+    else:
+      return self.client.check_for_received_message()
 
 
 class MultiplayerServer:
@@ -82,7 +96,9 @@ class MultiplayerClient:
     self.host = host
     self.port = port
     self.server = socket.socket()
+    print(f"About to connect! Host: {host}, Port: {port}")
     self.server.connect((self.host, self.port))
+    print("Connected!")
 
   def send(self, message):
     if not self.server:

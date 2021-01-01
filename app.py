@@ -80,7 +80,6 @@ class App:
 
   # separate methods for each game state
   def draw(self):
-    print(f"Drawing {self.state}, main menu? {self.main_menu}")
     pyxel.rect(0, 0, 140, 105, 0)
 
     if self.state == AppState.MAIN_MENU:
