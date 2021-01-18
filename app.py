@@ -17,7 +17,9 @@ from app_state import AppState
 from library import multiplayer
 from menu import main_menu
 from match import match
+import constants
 
+PALETTE = [0x000000, 0xFFFFFF, 0x62FFFF, 0xBBFFFF, 0x71FF50, 0xB8FFA7, 0xFFE600, 0xFFF281, 0xD7160D, 0xFF3E35, 0xC31BFF, 0xCF49FF, 0x000A8D, 0x000DBC, 0x0, 0x0]
 
 class App:
   def __init__(self, port):
@@ -30,8 +32,7 @@ class App:
 
     self.multiplayer = multiplayer.Multiplayer(port=port)
     self.role = None
-
-    pyxel.init(140, 105, fps=30, quit_key=pyxel.KEY_Q)
+    pyxel.init(constants.GAME_WIDTH, constants.GAME_HEIGHT, scale=4, palette=PALETTE, fps=30, quit_key=pyxel.KEY_Q)
     pyxel.run(self.update, self.draw)
 
   # separate methods for each game state
@@ -80,7 +81,7 @@ class App:
 
   # separate methods for each game state
   def draw(self):
-    pyxel.rect(0, 0, 140, 105, 0)
+    pyxel.rect(x=0, y=0, w=constants.GAME_WIDTH, h=constants.GAME_HEIGHT, col=constants.COL_BG)
 
     if self.state == AppState.MAIN_MENU:
       self.main_menu.draw()
