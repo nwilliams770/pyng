@@ -18,16 +18,21 @@ import random
 import math
 import pyxel
 
+from .menu_state import MenuState
 from match import match_type
 import constants
+from label import ray_label
+
 
 class MainMenu():
   def __init__(self, multiplayer):
     self.i = 0
     self.multiplayer = multiplayer
+    self.state = MenuState.INTRO
 
     # We'll set this to indicate we're ready to start a match
     self.match_type = None
+    self.selection = None
 
     # TODO - refactor this into a better state tracker
     self.on_multiplayer_select_screen = True
@@ -37,11 +42,29 @@ class MainMenu():
       self.balls.append(BouncingBall.random_ball())
     self.fireworks = []
 
+    self.selection_menu = SelectionMenu(x=50, y=10, primary_options=['LOCAL MULTIPLAYER', 'ARTIFICIAL INTELLIGENCE', 'LAN CONNECT'], secondary_options=['CREDITS', 'CONTROLS'], option_padding=8, options_padding=10)\
+
+    self.title_label = ray_label.RayLabel('PYNG', size=26, colors=(1, 1), origin=(constants.GAME_WIDTH / 2, constants.GAME_HEIGHT / 2), alignment=ray_label.Alignment.CENTER)
+    self.enter_key_label = ray_label.RayLabel('PRESS ENTER TO START', size=6, colors=(1, 1), origin=(constants.GAME_WIDTH / 2, constants.GAME_HEIGHT * 0.75), alignment=ray_label.Alignment.CENTER)
+
+
   def update(self):
-    self.update_balls()
-    for firework in self.fireworks:
-      firework.update()
-    self.fireworks = [f for f in self.fireworks if not f.is_complete]
+    if self.state == MenuState.INTRO:
+      self.update_balls()
+      for firework in self.fireworks:
+        firework.update()
+      self.fireworks = [f for f in self.fireworks if not f.is_complete]
+
+      if pyxel.btnp(pyxel.KEY_ENTER):
+        # do some transition here
+        self.state = MenuState.MODE_SELECT
+
+    elif self.state == MenuState.MODE_SELECT:
+      self.selection_menu.update()
+
+
+
+
 
     if self.on_multiplayer_select_screen:
       # Whenever we're on the multiplayer screen, make sure we're running our server
@@ -67,7 +90,8 @@ class MainMenu():
       elif ball.x >= constants.GAME_WIDTH:
         ball.dx = -ball.dx
       elif ball.y <= 0:
-        ball.dy = -ball.dy
+        if ball.dy < 0:
+          ball.dy = -ball.dy
       elif ball.y >= constants.GAME_HEIGHT:
         ball.dy = -ball.dy
 
@@ -110,12 +134,88 @@ class MainMenu():
           pty = ty
 
   def draw(self):
-    pyxel.text(100, 50, s='PYNG', col=1)
-    # pyxel.pset(self.ball[0], self.ball[1], col=1)
-    self.draw_balls()
-    for firework in self.fireworks:
-      firework.draw()
+    pyxel.cls(0) # clear screen with black
 
+    if self.state == MenuState.INTRO:
+      self.draw_balls()
+      for firework in self.fireworks:
+        firework.draw()
+
+      self.title_label.draw()
+      enter_key_label_colors = (2, 3) if pyxel.frame_count % 10 < 5 else (4, 5)
+      self.enter_key_label.draw(colors=enter_key_label_colors)
+
+
+    elif self.state == MenuState.MODE_SELECT:
+      self.selection_menu.draw()
+
+class SelectionMenu:
+  def __init__(self, x, y, primary_options, secondary_options=[], option_padding=0, options_padding=0):
+    self.x = x
+    self.y = y
+    self.options = primary_options + secondary_options
+    self.primary_options = primary_options
+    self.secondary_options = secondary_options
+    self.option_padding = option_padding
+    self.options_padding = options_padding
+    self.active_option = primary_options[0]
+
+  def update_active_option(self, direction):
+    active_option_idx = self.options.index(self.active_option)
+    if direction > 0:
+      if active_option_idx == 0:
+        self.active_option = self.options[-1]
+      else:
+        self.active_option = self.options[active_option_idx - 1]
+    else:
+      if active_option_idx == len(self.options) - 1:
+        self.active_option = self.options[0]
+      else:
+        self.active_option = self.options[active_option_idx + 1]
+
+
+    # UPDATE selection cursor here?
+
+
+
+  def update(self):
+    if pyxel.btnp(pyxel.KEY_UP) or pyxel.btnp(pyxel.KEY_W):
+      self.update_active_option(1)
+
+    elif pyxel.btnp(pyxel.KEY_DOWN) or pyxel.btnp(pyxel.KEY_S):
+      self.update_active_option(-1)
+
+    elif pyxel.btnp(pyxel.KEY_ENTER):
+      print("A selection was made")
+
+  def draw(self):
+    x = self.x
+    y = self.y
+
+    for option in self.primary_options:
+      pyxel.text(x, y, option, 6 if option == self.active_option else 12)
+      y += self.option_padding
+
+    y += self.options_padding
+
+    for option in self.secondary_options:
+      pyxel.text(x, y, option, 6 if option == self.active_option else 12)
+      y += self.option_padding
+
+
+
+
+  class SelectionCursor:
+    def __init__(self, x, y, speed):
+      self.x = x
+      self.y = y
+      self.speed = speed
+
+    def update(self):
+      pass
+
+    def draw(self):
+      pass
 
 class BouncingBall:
   @staticmethod
@@ -189,14 +289,6 @@ class Firework:
         red_endy = self.y + 2 * full_length * math.sin(angle)
 
         pyxel.line(red_startx, red_starty, red_endx, red_endy, col=8)
-
-
-
-
-
-
-
-
 
 
 # self.input = ip_input.IpInput(screen_width=140, screen_height=105, bg_color=7, text_color=13) #Todo: pull these vals from config

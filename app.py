@@ -7,6 +7,8 @@ the app instantiates a match, ...
 * --> [ Main Menu ] <--> [ Play Match ] <--> [ Game Over ]
             A
             `---------> [ Credits ]
+            '
+            `---------> [ Controls ]
 
 """
 import argparse
@@ -41,6 +43,7 @@ class App:
     if self.state is None:
       self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
     elif self.state == AppState.MAIN_MENU:
+
       if self.main_menu.match_type:
         self.transition_to(state=AppState.MATCH, match_type=self.main_menu.match_type, multiplayer=self.multiplayer)
     elif self.state == AppState.MATCH:
