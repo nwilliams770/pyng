@@ -16,6 +16,10 @@ class Multiplayer:
     self._is_primary = True
 
   @property
+  def is_connected(self):
+    return self.server.is_connected
+
+  @property
   def is_primary(self):
     return self._is_primary
 

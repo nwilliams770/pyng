@@ -22,7 +22,6 @@ class MatchPhase(Enum):
   PLAYING = 2
   END = 3
 
-
 class Match():
   def __init__(self, match_type, multiplayer):
     self.state = None
@@ -50,7 +49,8 @@ class Match():
   def update_as_primary(self):
     if self.match_phase == MatchPhase.STARTING:
       self.state = {'phase': 'starting', 'frame': self.frame}
-      self.multiplayer.send(self.state)
+      if self.multiplayer.is_connected:
+        self.multiplayer.send(self.state)
 
       if self.frame >= 120:
         self.match_phase = MatchPhase.PLAYING
@@ -66,7 +66,8 @@ class Match():
     if self.match_phase == MatchPhase.PLAYING:
       self.consecutive_dropped_responses = 0
       self.state = self.engine.update(p1_input, p2_input)
-      self.multiplayer.send(self.state)
+      if self.multiplayer.is_connected:
+        self.multiplayer.send(self.state)
 
   def update_as_secondary(self):
     self.state = self.multiplayer.check_for_received_message()
