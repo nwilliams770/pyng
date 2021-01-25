@@ -20,28 +20,16 @@ class RayLabel(object):
   def __init__(self, text, typeface=Typeface.NORMAL, size=10.0, colors=(2, 3), origin=(0, 0), alignment=Alignment.LEFT):
     self.text = self._format(text)
     self.typeface = typeface
-    self.size = float(size)
+    self._size = float(size)
     self.colors = colors
     self.origin = origin
     self.alignment = alignment
     _font_cache.load(typeface)
+    self._recompute()
 
-    self._glyphs = [_font_cache.get_glyph(character=c, typeface=typeface, size=size) for c in self.text]
-
-    # Compute the width of the label
-    self._width = 0
-    for glyph in self._glyphs:
-      self._width += math.ceil(glyph.size[0] + glyph.kerning)
-    self._width -= glyph.kerning
-    self._height = max([g.size[1] for g in self._glyphs])
-
-    #  Note where we should draw from based on text alignment
-    if alignment == Alignment.LEFT:
-      self._left_origin_x = self.origin[0]
-    elif alignment == Alignment.CENTER:
-      self._left_origin_x = self.origin[0] - self._width / 2
-    elif alignment == Alignment.RIGHT:
-      self._left_origin_x = self.origin[0] - self._width
+  @property
+  def font_size(self):
+    return self._size
 
   @property
   def width(self):
@@ -50,6 +38,18 @@ class RayLabel(object):
   @property
   def height(self):
     return self._height
+
+  @property
+  def left(self):
+    return self._left_origin_x
+
+  @property
+  def bottom(self):
+    return self.origin[1] + self._height / 2
+
+  def set_size(self, size):
+    self._size = size
+    self._recompute()
 
   def draw(self, colors=None):
     # Draw, offset to account for alignment
@@ -61,6 +61,25 @@ class RayLabel(object):
     for glyph in self._glyphs:
       glyph.draw(colors=colors, origin=(x, y))
       x += math.ceil(glyph.size[0] + glyph.kerning)
+
+  def _recompute(self):
+    self._glyphs = [_font_cache.get_glyph(character=c, typeface=self.typeface, size=self.font_size) for c in self.text]
+
+    # Compute the width of the label
+    self._width = 0
+    self._height =  0
+    for glyph in self._glyphs:
+      self._width += math.ceil(glyph.size[0] + glyph.kerning)
+      self._height = max(self._height, glyph.size[1])
+    self._width -= glyph.kerning
+
+    #  Note where we should draw from based on text alignment
+    if self.alignment == Alignment.LEFT:
+      self._left_origin_x = self.origin[0]
+    elif self.alignment == Alignment.CENTER:
+      self._left_origin_x = self.origin[0] - self._width / 2
+    elif self.alignment == Alignment.RIGHT:
+      self._left_origin_x = self.origin[0] - self._width
 
   def _format(self, text):
     """Removes illegal characters"""
@@ -111,7 +130,7 @@ class FontCache(object):
     if (character, typeface, size) not in self._glyph_cache:
       if character not in self._typeface_cache[typeface]['glyphs']:
         return Glyph(lines=[], size=(0, 0), kerning=0)
-        raise ValueError(f"This typeface does not support the character '{character}'")
+        # raise ValueError(f"This typeface does not support the character '{character}'")
 
       settings = self._typeface_cache[typeface]['settings']
       glyph_lines = self._typeface_cache[typeface]['glyphs'][character]

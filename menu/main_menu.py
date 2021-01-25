@@ -38,7 +38,7 @@ class MainMenu():
     # We'll set this to indicate we're ready to start a match
     self.match_type = None
 
-    self.selection_menu = SelectionMenu(x=50, y=10, primary_options=['LOCAL MULTIPLAYER', 'ARTIFICIAL INTELLIGENCE', 'LAN CONNECT'], secondary_options=['CREDITS', 'CONTROLS'], option_padding=8, options_padding=10)
+    self.selection_menu = SelectionMenu(primary_options=['LOCAL MULTIPLAYER', 'ARTIFICIAL INTELLIGENCE', 'LAN CONNECT'], secondary_options=['CREDITS', 'CONTROLS'], option_padding=15, options_padding=20)
     self.lan_connection_menu = LANConnectMenu()
     self.title_screen = TitleScreen()
     self.credits_screen = CreditsScreen()
@@ -74,6 +74,7 @@ class MainMenu():
         self.selection_menu.selection = None
 
     elif self.state == MenuState.LAN_CONNECT:
+      self.lan_connection_menu.update()
       # Whenever we're on the multiplayer screen, make sure we're running our server
       # so someone can connect to us.
       # Also, each frame, check if someone has connected.
@@ -117,6 +118,9 @@ class MainMenu():
 
     elif self.state == MenuState.CONTROLS:
       self.controls_screen.draw()
+
+    elif self.state == MenuState.LAN_CONNECT:
+      self.lan_connection_menu.draw()
 
 
 # self.input = ip_input.IpInput(screen_width=140, screen_height=105, bg_color=7, text_color=13) #Todo: pull these vals from config
