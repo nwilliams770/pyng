@@ -16,6 +16,18 @@ class Multiplayer:
     self._is_primary = True
 
   @property
+  def is_on_lan(self):
+    return self.my_ip != '0.0.0.0'
+
+  @property
+  def my_ip(self):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    my_ip = s.getsockname()[0]
+    s.close()
+    return my_ip
+
+  @property
   def is_connected(self):
     return self.server.is_connected
 

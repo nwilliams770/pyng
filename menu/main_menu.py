@@ -39,7 +39,7 @@ class MainMenu():
     self.match_type = None
 
     self.selection_menu = SelectionMenu(primary_options=['LOCAL MULTIPLAYER', 'ARTIFICIAL INTELLIGENCE', 'LAN CONNECT'], secondary_options=['CREDITS', 'CONTROLS'], option_padding=15, options_padding=20)
-    self.lan_connection_menu = LANConnectMenu()
+    self.lan_connection_menu = LANConnectMenu(multiplayer=multiplayer)
     self.title_screen = TitleScreen()
     self.credits_screen = CreditsScreen()
     self.controls_screen = ControlsScreen()

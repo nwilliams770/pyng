@@ -18,7 +18,7 @@ class Typeface:
 
 class RayLabel(object):
   def __init__(self, text, typeface=Typeface.NORMAL, size=10.0, colors=(2, 3), origin=(0, 0), alignment=Alignment.LEFT):
-    self.text = self._format(text)
+    self._text = self._format(text)
     self.typeface = typeface
     self._size = float(size)
     self.colors = colors
@@ -44,11 +44,23 @@ class RayLabel(object):
     return self._left_origin_x
 
   @property
+  def top(self):
+    return self.origin[1] - self._height / 2
+
+  @property
   def bottom(self):
     return self.origin[1] + self._height / 2
 
+  @property
+  def text(self):
+    return self._text
+
   def set_size(self, size):
     self._size = size
+    self._recompute()
+
+  def set_text(self, text):
+    self._text = text
     self._recompute()
 
   def draw(self, colors=None):
@@ -63,7 +75,7 @@ class RayLabel(object):
       x += math.ceil(glyph.size[0] + glyph.kerning)
 
   def _recompute(self):
-    self._glyphs = [_font_cache.get_glyph(character=c, typeface=self.typeface, size=self.font_size) for c in self.text]
+    self._glyphs = [_font_cache.get_glyph(character=c, typeface=self.typeface, size=self.font_size) for c in self._text]
 
     # Compute the width of the label
     self._width = 0
@@ -71,7 +83,9 @@ class RayLabel(object):
     for glyph in self._glyphs:
       self._width += math.ceil(glyph.size[0] + glyph.kerning)
       self._height = max(self._height, glyph.size[1])
-    self._width -= glyph.kerning
+
+    if len(self._glyphs):
+      self._width -= glyph.kerning
 
     #  Note where we should draw from based on text alignment
     if self.alignment == Alignment.LEFT:

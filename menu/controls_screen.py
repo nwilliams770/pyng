@@ -3,6 +3,9 @@ import constants
 
 from label import ray_label
 
+# TODO: Just draw the key caps for P1 and P2, as well as how many points to win
+# TODO: maybeeee, have p1 and p2 paddles, if p1 controls hit, key cap lights up or something like thats
+
 
 class ControlsScreen():
   def __init__(self):
@@ -13,7 +16,6 @@ class ControlsScreen():
   def update(self):
     if pyxel.btnp(pyxel.KEY_ENTER):
       self.navigate_to_menu = True
-
 
   def draw(self):
     self.title.draw()
