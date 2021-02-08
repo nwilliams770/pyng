@@ -89,6 +89,9 @@ class MainMenu():
         #        a valid host
         self.multiplayer.connect(host='127.0.0.1', port=5001 if self.multiplayer.port == 5002 else 5002)
         self.match_type = match_type.LANMultiplayer()
+      elif self.lan_connection_menu.navigate_to_menu:
+        self.state = MenuState.SELECTION_MENU
+        self.lan_connection_menu.navigate_to_menu = None
 
     elif self.state == MenuState.CREDITS:
       self.credits_screen.update()

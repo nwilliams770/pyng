@@ -2,7 +2,7 @@ import pyxel
 import ipaddress
 
 import constants
-from label import ray_label
+from label import key_cap_label, ray_label
 from library import multiplayer
 
 """
@@ -28,7 +28,14 @@ class LANConnectMenu():
     self.input_label = ray_label.RayLabel("Opponent:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH / 2, 100), alignment=ray_label.Alignment.CENTER)
     self.ip_input = IpInput(center=(constants.GAME_WIDTH / 2, self.input_label.bottom + 16))
 
+    self.footer_label = ray_label.RayLabel("Return to Main Menu:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH / 2, 168), alignment=ray_label.Alignment.CENTER)
+    self.footer_key_cap = key_cap_label.KeyCapLabel(key_str="M", key_code=pyxel.KEY_M, size=4.0, origin=(constants.GAME_WIDTH / 2, self.footer_label.bottom + 11), alignment=ray_label.Alignment.CENTER)
+
   def update(self):
+    if pyxel.btn(self.footer_key_cap.key_code):
+      self.ip_input.clear()
+      self.navigate_to_menu = True
+
     self.ip_input.update()
 
   def draw(self):
@@ -36,7 +43,8 @@ class LANConnectMenu():
     self.waiting_for_connection_label.draw()
     self.ip_input.draw()
     self.input_label.draw()
-
+    self.footer_label.draw()
+    self.footer_key_cap.draw()
 
 class IpInput:
   def __init__(self, center):
@@ -94,6 +102,11 @@ class IpInput:
       self.input_error = False
     else:
       self.input_error = True
+
+  def clear(self):
+    self.value = ''
+    self.input_error = False
+    self.input_label.set_text(self.value)
 
   def update(self):
     for key in self.valid_inputs.keys():
