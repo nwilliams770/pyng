@@ -34,7 +34,7 @@ class App:
 
     self.multiplayer = multiplayer.Multiplayer(port=port)
     self.role = None
-    pyxel.init(constants.GAME_WIDTH, constants.GAME_HEIGHT, scale=4, palette=PALETTE, fps=30, quit_key=pyxel.KEY_Q)
+    pyxel.init(constants.GAME_WIDTH, constants.GAME_HEIGHT, scale=4, palette=PALETTE, fps=30, quit_key=pyxel.KEY_ESCAPE)
     pyxel.run(self.update, self.draw)
 
   # separate methods for each game state
