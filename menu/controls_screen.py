@@ -60,7 +60,7 @@ class Paddle:
     self.player_num = player_num
     self.width = 2
     self.height = 16
-    self.y = 80
+    self.y = 106
     self.x = 40 if player_num == 1 else constants.GAME_WIDTH - 40 - self.width
     self.PLAYER_SPEED = 2
 
