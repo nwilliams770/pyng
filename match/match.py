@@ -69,6 +69,9 @@ class Match():
       if self.multiplayer.is_connected:
         self.multiplayer.send(self.state)
 
+    if self.match_phase == MatchPhase.END:
+      pass
+
   def update_as_secondary(self):
     self.state = self.multiplayer.check_for_received_message()
     if not self.state:
