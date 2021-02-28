@@ -2,7 +2,7 @@ import pyxel
 from . import ray_label
 
 class MenuOptionLabel(object):
-    def __init__(self, text, size=6.0, deselected_colors=(12,  13), selected_colors=(1, 1), underline_color=6, origin=(0, 0), alignment=ray_label.Alignment.LEFT):
+    def __init__(self, text, size=6.0, deselected_colors=(12,  13), selected_colors=[(2, 3), (4, 5)], underline_color=6, origin=(0, 0), alignment=ray_label.Alignment.LEFT):
         self._label = ray_label.RayLabel(text=text, size=size, origin=origin, alignment=alignment)
         self.deselected_colors = deselected_colors
         self.selected_colors = selected_colors
@@ -24,7 +24,11 @@ class MenuOptionLabel(object):
         self._label.set_size(self._size)
 
     def draw(self):
-        color =  self.selected_colors if self.is_selected else self.deselected_colors
+        if self.is_selected:
+          color = self.selected_colors[0 if pyxel.frame_count % 10 < 5 else 1]
+        else:
+          color = self.deselected_colors
+
         self._label.draw(color)
 
         if self.is_selected:
