@@ -13,7 +13,7 @@ import math
 from enum import Enum
 
 from library import multiplayer
-from match import match_type, engine, renderer
+from match import match_type, engine, renderer, replay_menu
 from match.constants import *
 
 
@@ -26,9 +26,10 @@ class Match():
   def __init__(self, match_type, multiplayer):
     self.state = None
     self.match_type = match_type
-
-    self.should_close = False
-    self.game_over = False
+    self.winner = None
+    self.replay_menu = replay_menu.ReplayMenu()
+    self.return_to_menu = False
+    self.replay = False
 
     self.multiplayer = multiplayer
     self.is_primary = multiplayer.is_primary
@@ -69,8 +70,23 @@ class Match():
       if self.multiplayer.is_connected:
         self.multiplayer.send(self.state)
 
+      if winner := self.engine.check_for_winner():
+        self.winner = winner
+        self.match_phase = MatchPhase.END
+
     if self.match_phase == MatchPhase.END:
-      pass
+      self.state['phase'] = 'end'
+      self.state['frame'] = self.frame
+      self.state['winner'] = self.winner
+
+      self.replay_menu.update()
+
+      if self.replay_menu.selection:
+        if self.replay_menu.selection == "REMATCH":
+          self.replay = True
+        elif self.replay_menu.selection == "RETURN TO MENU":
+          self.return_to_menu = True
+
 
   def update_as_secondary(self):
     self.state = self.multiplayer.check_for_received_message()
@@ -92,6 +108,9 @@ class Match():
 
     renderer.draw_from_state(self.state)
 
+    if self.match_phase == MatchPhase.END:
+      self.replay_menu.draw()
+
 # TODO: move to engine? only ever called by the primary
   def get_inputs(self):
     p1_input = None
@@ -102,12 +121,12 @@ class Match():
     # TODO is_p2_ai
 
     if is_p1_local:
-      if pyxel.btn(pyxel.KEY_W) and pyxel.btn(pyxel.KEY_S):
+      if pyxel.btn(pyxel.KEY_Q) and pyxel.btn(pyxel.KEY_A):
         p1_input = None
-      elif pyxel.btn(pyxel.KEY_W):
-        p1_input = pyxel.KEY_W
-      elif pyxel.btn(pyxel.KEY_S):
-        p1_input = pyxel.KEY_S
+      elif pyxel.btn(pyxel.KEY_Q):
+        p1_input = pyxel.KEY_Q
+      elif pyxel.btn(pyxel.KEY_A):
+        p1_input = pyxel.KEY_A
     else:
       # We should never get here with the current assumption that p1 is always primary
       pass

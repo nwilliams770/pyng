@@ -2,6 +2,14 @@
 Responsible for the Pong Game Engine
 """
 
+# TODOS:
+# - Add game over logic
+# - Add error state if too many dropped frames
+# - Add options to game over to play again or go to menu
+# - Style board
+# - Potentially look into collision detection?
+
+
 import pyxel
 import random
 import math
@@ -32,7 +40,7 @@ class Engine():
     }
 
   def update_match(self, p1_input, p2_input):
-    if self.check_for_score():
+    if self.check_and_process_score():
       self.ball.alive = False
 
     self.player_one.update(p1_input)
@@ -54,7 +62,15 @@ class Engine():
 
       self.ball.update()
 
-  def check_for_score(self):
+  def check_for_winner(self):
+    if self.player_one.score == WIN_SCORE:
+      return self.player_one.player_num
+    elif self.player_two.score == WIN_SCORE:
+      return self.player_two.player_num
+    else:
+      return None
+
+  def check_and_process_score(self):
     if self.ball.alive == False:
       return False
 
@@ -111,19 +127,19 @@ class Player:
 
   @property
   def moving_up(self):
-    key_up = pyxel.KEY_W if self.player_num == 1 else pyxel.KEY_I
+    key_up = pyxel.KEY_Q if self.player_num == 1 else pyxel.KEY_I
     return pyxel.btn(key_up)
 
   @property
   def moving_down(self):
-    key_down = pyxel.KEY_S if self.player_num == 1 else pyxel.KEY_K
+    key_down = pyxel.KEY_A if self.player_num == 1 else pyxel.KEY_K
     return pyxel.btn(key_down)
 
   def update(self, key_input):
     if self.player_num == 1:
-      if key_input == pyxel.KEY_W:
+      if key_input == pyxel.KEY_Q:
         self.update_player_pos(-PLAYER_SPEED)
-      elif key_input == pyxel.KEY_S:
+      elif key_input == pyxel.KEY_A:
         self.update_player_pos(PLAYER_SPEED)
     elif self.player_num == 2:
       if key_input == pyxel.KEY_O:

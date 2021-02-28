@@ -17,7 +17,7 @@ import pyxel
 
 from app_state import AppState
 from library import multiplayer
-from menu import main_menu
+from menu import main_menu, menu_state
 from match import match
 import constants
 
@@ -47,35 +47,27 @@ class App:
       if self.main_menu.match_type:
         self.transition_to(state=AppState.MATCH, match_type=self.main_menu.match_type, multiplayer=self.multiplayer)
     elif self.state == AppState.MATCH:
-      pass
-      # if self.match.should_close:
-      #   self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
-      # elif self.match.game_over:
-      #   self.transition_to(state=AppState.GAME_OVER)
-    elif self.state == AppState.GAME_OVER:
-      if self.match.replay:
-        pass # TODO: self.transition_to(state=AppState.MATCH, ...)
-      elif self.match.should_close:
+      if self.match.return_to_menu:
+        self.main_menu.match_type = None
+        self.main_menu.state = menu_state.MenuState.SELECTION_MENU
+        self.match = None
         self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
-    elif self.state == AppState.CREDITS:
-      if self.credits.should_close:
-        self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
+      elif self.match.replay:
+        self.match = match.Match(self.main_menu.match_type, self.multiplayer)
+
 
     # Now, update for the current state
     if self.state == AppState.MAIN_MENU:
       self.main_menu.update()
     elif self.state == AppState.MATCH:
       self.match.update()
-    # elif ...
 
   def transition_to(self, state, **kwargs):
     assert(state != self.state)
     print(f"\t Transition to {state}")
 
-    if state == AppState.MAIN_MENU:
+    if state == AppState.MAIN_MENU and self.main_menu is None:
       self.main_menu = main_menu.MainMenu(**kwargs)
-    else:
-      self.main_menu = None
 
     if state == AppState.MATCH:
       self.match = match.Match(**kwargs)
