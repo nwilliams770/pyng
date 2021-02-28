@@ -17,3 +17,6 @@ BALL_WIDTH = 4
 BALL_COLOR = 11
 
 PRE_START_FRAME_DELAY = 60
+
+# How many points needed to win
+WIN_SCORE = 1
