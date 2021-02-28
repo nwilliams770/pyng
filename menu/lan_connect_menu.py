@@ -22,14 +22,14 @@ class LANConnectMenu():
     self.navigate_to_menu = None
     self.valid_input_submitted = None
 
-    self.waiting_for_connection_label = ray_label.RayLabel("You:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH / 2, 40), alignment=ray_label.Alignment.CENTER)
-    self.my_ip_label = ray_label.RayLabel(self.multiplayer.my_ip, size=6.0, colors=(6, 7), origin=(constants.GAME_WIDTH / 2, 58), alignment=ray_label.Alignment.CENTER)
+    self.waiting_for_connection_label = ray_label.RayLabel("You:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5, 40), alignment=ray_label.Alignment.CENTER)
+    self.my_ip_label = ray_label.RayLabel(self.multiplayer.my_ip, size=6.0, colors=(6, 7), origin=(constants.GAME_WIDTH * .5, 58), alignment=ray_label.Alignment.CENTER)
 
-    self.input_label = ray_label.RayLabel("Opponent:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH / 2, 100), alignment=ray_label.Alignment.CENTER)
-    self.ip_input = IpInput(center=(constants.GAME_WIDTH / 2, self.input_label.bottom + 16))
+    self.input_label = ray_label.RayLabel("Opponent:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5, 100), alignment=ray_label.Alignment.CENTER)
+    self.ip_input = IpInput(center=(constants.GAME_WIDTH * .5, self.input_label.bottom + 16))
 
-    self.footer_label = ray_label.RayLabel("Return to Main Menu:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH / 2, 168), alignment=ray_label.Alignment.CENTER)
-    self.footer_key_cap = key_cap_label.KeyCapLabel(key_str="M", key_code=pyxel.KEY_M, size=4.0, origin=(constants.GAME_WIDTH / 2, self.footer_label.bottom + 11), alignment=ray_label.Alignment.CENTER)
+    self.footer_label = ray_label.RayLabel("Return to Main Menu", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5 + 13, 178), alignment=ray_label.Alignment.CENTER)
+    self.footer_key_cap = key_cap_label.KeyCapLabel(key_str="M", key_code=pyxel.KEY_M, size=4.0, origin=(constants.GAME_WIDTH * .5 - 47, self.footer_label.top + 2), alignment=ray_label.Alignment.CENTER)
 
   def update(self):
     if pyxel.btn(self.footer_key_cap.key_code):

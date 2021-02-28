@@ -14,8 +14,8 @@ class TitleScreen():
     for _ in range(10):
       self.balls.append(BouncingBall.random_ball())
     self.fireworks = []
-    self.title_label = ray_label.RayLabel('PYNG', size=26, colors=(1, 1), origin=(constants.GAME_WIDTH / 2, constants.GAME_HEIGHT / 2), alignment=ray_label.Alignment.CENTER)
-    self.enter_key_label = ray_label.RayLabel('PRESS ENTER TO START', size=6, colors=(1, 1), origin=(constants.GAME_WIDTH / 2, constants.GAME_HEIGHT * 0.75), alignment=ray_label.Alignment.CENTER)
+    self.title_label = ray_label.RayLabel('PYNG', size=26, colors=(1, 1), origin=(constants.GAME_WIDTH * .5, constants.GAME_HEIGHT * .5), alignment=ray_label.Alignment.CENTER)
+    self.enter_key_label = ray_label.RayLabel('PRESS ENTER TO START', size=6, colors=(1, 1), origin=(constants.GAME_WIDTH * .5, constants.GAME_HEIGHT * 0.75), alignment=ray_label.Alignment.CENTER)
 
   def update(self):
     self.update_balls()

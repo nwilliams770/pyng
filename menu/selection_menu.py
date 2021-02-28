@@ -17,8 +17,8 @@ class SelectionMenu:
     total_height = (len(self.primary_options) - 1) * option_padding
     if secondary_options:
       total_height += (len(self.secondary_options) - 1) * option_padding + options_padding
-    x = constants.GAME_WIDTH / 2
-    y = (constants.GAME_HEIGHT - total_height) / 2
+    x = constants.GAME_WIDTH * .5
+    y = (constants.GAME_HEIGHT - total_height) * .5
     for i, option in enumerate(self.options):
       if i == len(self.primary_options):
         y += options_padding
@@ -56,15 +56,3 @@ class SelectionMenu:
   def draw(self):
     for label in self.labels:
       label.draw()
-
-
-
-    # for option in self.primary_options:
-    #   pyxel.text(x, y, option, 6 if option == self.active_option else 12)
-    #   y += self.option_padding
-
-    # y += self.options_padding
-
-    # for option in self.secondary_options:
-    #   pyxel.text(x, y, option, 6 if option == self.active_option else 12)
-    #   y += self.option_padding
