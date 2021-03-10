@@ -3,11 +3,9 @@ Responsible for the Pong Game Engine
 """
 
 # TODOS:
-# - Add game over logic
 # - Add error state if too many dropped frames
-# - Add options to game over to play again or go to menu
 # - Style board
-# - Potentially look into collision detection?
+# - Potentially look into collision detection? some weird behaviors sometimes
 
 
 import pyxel

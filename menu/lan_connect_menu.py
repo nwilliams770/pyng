@@ -11,7 +11,8 @@ from library import multiplayer
 # - fix validation (onnly show green for good IP)
   - show user's ip address
   - show waiting to connect
-  - sohw notification when connected
+  - show notification when connected
+  - Show errors if failed to connect
 
 """
 
