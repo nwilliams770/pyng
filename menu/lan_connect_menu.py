@@ -14,6 +14,8 @@ from library import multiplayer
   - show notification when connected
   - Show errors if failed to connect
 
+
+- Probably have phases like entering input, valid input submitted (show 'Connecting..." for 1s or two), then flash 'Opponent Found!' before starting the match
 """
 
 
@@ -21,7 +23,7 @@ class LANConnectMenu():
   def __init__(self, multiplayer):
     self.multiplayer = multiplayer
     self.navigate_to_menu = None
-    self.valid_input_submitted = None
+    self.has_valid_input = None
 
     self.waiting_for_connection_label = ray_label.RayLabel("You:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5, 40), alignment=ray_label.Alignment.CENTER)
     self.my_ip_label = ray_label.RayLabel(self.multiplayer.my_ip, size=6.0, colors=(6, 7), origin=(constants.GAME_WIDTH * .5, 58), alignment=ray_label.Alignment.CENTER)
@@ -29,6 +31,8 @@ class LANConnectMenu():
     self.input_label = ray_label.RayLabel("Opponent:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5, 100), alignment=ray_label.Alignment.CENTER)
     self.ip_input = IpInput(center=(constants.GAME_WIDTH * .5, self.input_label.bottom + 16))
 
+    self.submit_label = ray_label.RayLabel("Submit", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5 + 27, 162), alignment=ray_label.Alignment.CENTER)
+    self.submit_key_cap = key_cap_label.KeyCapLabel(key_str="Enter", key_code=pyxel.KEY_ENTER, size=4.0, origin=(constants.GAME_WIDTH * .5 - 12, self.submit_label.top + 2), alignment=ray_label.Alignment.CENTER)
     self.footer_label = ray_label.RayLabel("Return to Main Menu", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5 + 13, 178), alignment=ray_label.Alignment.CENTER)
     self.footer_key_cap = key_cap_label.KeyCapLabel(key_str="M", key_code=pyxel.KEY_M, size=4.0, origin=(constants.GAME_WIDTH * .5 - 47, self.footer_label.top + 2), alignment=ray_label.Alignment.CENTER)
 
@@ -39,11 +43,14 @@ class LANConnectMenu():
 
     self.ip_input.update()
 
+
   def draw(self):
     self.my_ip_label.draw()
     self.waiting_for_connection_label.draw()
     self.ip_input.draw()
     self.input_label.draw()
+    self.submit_label.draw()
+    self.submit_key_cap.draw()
     self.footer_label.draw()
     self.footer_key_cap.draw()
 
