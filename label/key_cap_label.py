@@ -2,7 +2,6 @@ import pyxel
 from . import ray_label
 
 class KeyCapLabel(object):
-  # TODO: fix misalignment when size > 4.0
   def __init__(self, key_str, key_code, key_padding=5.0, size=5.0, unpressed_colors=(12, 13), pressed_colors=(6, 7), origin=(0, 0), alignment=ray_label.Alignment.LEFT):
     self.key_padding = key_padding
     self.unpressed_colors = unpressed_colors
