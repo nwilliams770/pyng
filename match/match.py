@@ -47,6 +47,15 @@ class Match():
     else:
       self.update_as_secondary()
 
+  def update_replay_menu(self):
+    self.replay_menu.update()
+
+    if self.replay_menu.selection:
+      if self.replay_menu.selection == "REMATCH":
+        self.replay = True
+      elif self.replay_menu.selection == "RETURN TO MENU":
+        self.return_to_menu = True
+
   def update_as_primary(self):
     if self.match_phase == MatchPhase.STARTING:
       self.state = {'phase': 'starting', 'frame': self.frame}
@@ -56,15 +65,18 @@ class Match():
       if self.frame >= 120:
         self.match_phase = MatchPhase.PLAYING
 
-    try:
-      p1_input, p2_input = self.get_inputs()
-    except multiplayer.NoMessageError:
-      print(f"Did not receive a response, {self.consecutive_dropped_responses} in a row!")
-      self.consecutive_dropped_responses += 1
-      # TODO - after x dropped in a row, go to GAME OVER screen, showing error
-      return
-
     if self.match_phase == MatchPhase.PLAYING:
+      print("entered PLAYING phase")
+      # If we're playing, get the inputs
+      try:
+        p1_input, p2_input = self.get_inputs()
+      except multiplayer.NoMessageError:
+        print(f"Did not receive a response, {self.consecutive_dropped_responses} in a row!")
+        self.consecutive_dropped_responses += 1
+        # TODO - after x dropped in a row, go to GAME OVER screen, showing error
+        return
+
+      # Reset if we've gotten inputs successfully
       self.consecutive_dropped_responses = 0
       self.state = self.engine.update(p1_input, p2_input)
       if self.multiplayer.is_connected:
@@ -79,13 +91,10 @@ class Match():
       self.state['frame'] = self.frame
       self.state['winner'] = self.winner
 
-      self.replay_menu.update()
+      if self.multiplayer.is_connected:
+        self.multiplayer.send(self.state)
 
-      if self.replay_menu.selection:
-        if self.replay_menu.selection == "REMATCH":
-          self.replay = True
-        elif self.replay_menu.selection == "RETURN TO MENU":
-          self.return_to_menu = True
+      self.update_replay_menu()
 
 
   def update_as_secondary(self):
@@ -96,11 +105,17 @@ class Match():
       return
 
     # Ack by sending back which keys are currently pressed
-    _, p2_input = self.get_inputs()
-    message = {
-      'key_pressed': p2_input
-    }
-    self.multiplayer.send(message)
+    # Note: here is a good place to test dropped connections for error messaging
+    #just replace below line with: if self.state['phase'] == 'playing'
+    if self.state['phase'] == 'playing' or self.state['phase'] == 'starting':
+      _, p2_input = self.get_inputs()
+      message = {
+        'key_pressed': p2_input
+      }
+      self.multiplayer.send(message)
+
+    if self.state['phase'] == 'end':
+      self.update_replay_menu()
 
   def draw(self):
     if not self.state:
@@ -108,7 +123,7 @@ class Match():
 
     renderer.draw_from_state(self.state)
 
-    if self.match_phase == MatchPhase.END:
+    if self.state['phase'] == 'end':
       self.replay_menu.draw()
 
 # TODO: move to engine? only ever called by the primary

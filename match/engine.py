@@ -3,7 +3,10 @@ Responsible for the Pong Game Engine
 """
 
 # TODOS:
-# - Add error state if too many dropped frames
+# - Error states + messaging:
+#        Player disconnect on either (make sure to terminate multiplater + all cleanup),
+#        Rematch -- when one player says yes and other no, when both say yes
+#
 # - Style board
 # - Potentially look into collision detection? some weird behaviors sometimes
 
