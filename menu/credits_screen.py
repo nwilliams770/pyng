@@ -3,7 +3,7 @@ import constants
 
 from label import ray_label, key_cap_label
 
-# TODO: Two AIs playing at super speed
+
 class CreditsScreen():
   def __init__(self):
     self.navigate_to_menu = None

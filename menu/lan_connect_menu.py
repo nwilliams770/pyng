@@ -7,16 +7,11 @@ from label import key_cap_label, ray_label
 from library import multiplayer
 
 """
-# TODO:
-# - get IP input looking good,
-# - fix validation (onnly show green for good IP)
-  - show user's ip address
-  - show waiting to connect
-  - show notification when connected
-  - Show errors if failed to connect
-
-
-- Probably have phases like entering input, valid input submitted (show 'Connecting..." for 1s or two), then flash 'Opponent Found!' before starting the match
+TODO:
+- Refactor connection logic based off user input
+- Test on different devices
+- Test functionality for when user is connected to
+-
 """
 
 
