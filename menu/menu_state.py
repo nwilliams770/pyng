@@ -6,3 +6,8 @@ class MenuState(Enum):
   LAN_CONNECT = 3
   CREDITS = 4
   CONTROLS = 5
+
+class LanConnectMenuState(Enum):
+  COLLECTING_INPUT = 1
+  CONNECTING = 2
+  OPPONENT_FOUND = 3

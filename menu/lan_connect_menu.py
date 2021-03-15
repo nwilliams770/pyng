@@ -2,6 +2,7 @@ import pyxel
 import ipaddress
 
 import constants
+from .menu_state import LanConnectMenuState
 from label import key_cap_label, ray_label
 from library import multiplayer
 
@@ -21,15 +22,21 @@ from library import multiplayer
 
 class LANConnectMenu():
   def __init__(self, multiplayer):
+    self.state = LanConnectMenuState.COLLECTING_INPUT
+    self.frame = 0
     self.multiplayer = multiplayer
-    self.navigate_to_menu = None
-    self.has_valid_input = None
+    self.navigate_to_menu = False
+    self.connected = False
 
     self.waiting_for_connection_label = ray_label.RayLabel("You:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5, 40), alignment=ray_label.Alignment.CENTER)
     self.my_ip_label = ray_label.RayLabel(self.multiplayer.my_ip, size=6.0, colors=(6, 7), origin=(constants.GAME_WIDTH * .5, 58), alignment=ray_label.Alignment.CENTER)
+    self.connecting_label = ray_label.RayLabel("Connecting...", size=4.0, colors=(1, 1), origin=(constants.GAME_WIDTH * .5, 79), alignment=ray_label.Alignment.CENTER)
+    self.opponent_found_label = ray_label.RayLabel("Opponent Found", size=4.0, colors=(4, 5), origin=(constants.GAME_WIDTH * .5, 79), alignment=ray_label.Alignment.CENTER)
 
     self.input_label = ray_label.RayLabel("Opponent:", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5, 100), alignment=ray_label.Alignment.CENTER)
     self.ip_input = IpInput(center=(constants.GAME_WIDTH * .5, self.input_label.bottom + 16))
+
+    self.error_label = ray_label.RayLabel("Connection Error Please Try Again", size=4.0, colors=(8, 9), origin=(constants.GAME_WIDTH * .5, self.input_label.bottom + self.ip_input.input_box_height + 14), alignment=ray_label.Alignment.CENTER)
 
     self.submit_label = ray_label.RayLabel("Submit", size=4.0, colors=(12, 13), origin=(constants.GAME_WIDTH * .5 + 27, 162), alignment=ray_label.Alignment.CENTER)
     self.submit_key_cap = key_cap_label.KeyCapLabel(key_str="Enter", key_code=pyxel.KEY_ENTER, size=4.0, origin=(constants.GAME_WIDTH * .5 - 12, self.submit_label.top + 2), alignment=ray_label.Alignment.CENTER)
@@ -37,12 +44,47 @@ class LANConnectMenu():
     self.footer_key_cap = key_cap_label.KeyCapLabel(key_str="M", key_code=pyxel.KEY_M, size=4.0, origin=(constants.GAME_WIDTH * .5 - 47, self.footer_label.top + 2), alignment=ray_label.Alignment.CENTER)
 
   def update(self):
-    if pyxel.btn(self.footer_key_cap.key_code):
-      self.ip_input.clear()
-      self.navigate_to_menu = True
+    if self.state == LanConnectMenuState.COLLECTING_INPUT:
+      # Whenever we're on the multiplayer screen, make sure we're running our server
+      # so someone can connect to us.
+      # Also, each frame, check if someone has connected.
+      if not self.multiplayer.server.is_started:
+        self.multiplayer.server.start()
 
-    self.ip_input.update()
+      if self.multiplayer.server.check_for_connection():
+        self.state = LanConnectMenuState.OPPONENT_FOUND
 
+      # User navigated back to main menu
+      if pyxel.btn(self.footer_key_cap.key_code):
+        self.ip_input.clear()
+        self.navigate_to_menu = True
+
+      self.ip_input.update()
+
+      if pyxel.btnp(pyxel.KEY_ENTER) and not self.ip_input.input_empty:
+        self.state = LanConnectMenuState.CONNECTING
+
+    elif self.state == LanConnectMenuState.CONNECTING:
+      self.frame += 1
+
+      if self.frame == 90:
+        host = self.ip_input.value
+        try:
+          # self.multiplayer.connect(host='127.0.0.1', port=5001 if self.multiplayer.port == 5002 else 5002)
+          self.state = LanConnectMenuState.OPPONENT_FOUND
+        except ConnectionError:
+          self.connection_error()
+          self.state = LanConnectMenuState.COLLECTING_INPUT
+
+        self.frame = 0
+
+    elif self.state == LanConnectMenuState.OPPONENT_FOUND:
+      self.frame += 1
+
+      if self.frame == 60:
+        self.connected = True
+        self.frame = 0
+        self.reset()
 
   def draw(self):
     self.my_ip_label.draw()
@@ -53,6 +95,23 @@ class LANConnectMenu():
     self.submit_key_cap.draw()
     self.footer_label.draw()
     self.footer_key_cap.draw()
+
+    if self.ip_input.connection_error:
+      self.error_label.draw()
+
+    if self.state == LanConnectMenuState.CONNECTING and pyxel.frame_count % 30 > 15:
+      self.connecting_label.draw()
+
+    if self.state == LanConnectMenuState.OPPONENT_FOUND:
+      self.opponent_found_label.draw()
+
+
+  def connection_error(self):
+    self.ip_input.connection_error = True
+
+  def reset(self):
+    self.ip_input.clear()
+    self.input = ''
 
 class IpInput:
   def __init__(self, center):
@@ -67,15 +126,14 @@ class IpInput:
     # Pad around the labels
     label_origin = (center[0] - label_for_size.width / 2, center[1])
     self.origin = (label_origin[0] - 4, label_origin[1] - label_for_size.height/2 - 4)
-    self.width = label_for_size.width + 8
-    self.height = label_for_size.height + 8
+    self.input_box_width = label_for_size.width + 8
+    self.input_box_height = label_for_size.height + 9
 
     self.input_placeholder_label = ray_label.RayLabel("IPv4 Address", size=text_size, colors=(12, 13), origin=label_origin, alignment=ray_label.Alignment.LEFT)
     self.input_label = ray_label.RayLabel("", size=text_size, colors=(1, 1), origin=label_origin, alignment=ray_label.Alignment.LEFT)
 
     self.value = ''
-    self.input_error = False
-    self.input_submitted = False
+    self.connection_error = False
 
     self.valid_inputs = {
       pyxel.KEY_0: '0',
@@ -98,22 +156,8 @@ class IpInput:
   def _is_under_char_limit(self):
     return len(self.value) <= self.max_chars
 
-  def _is_valid_input(self):
-    try:
-      ipaddress.IPv4Address(self.value)
-      return True
-    except ValueError:
-      return False
-
-  def _validate_input(self):
-    if self._is_valid_input() and not self.input_empty:
-      self.input_error = False
-    else:
-      self.input_error = True
-
   def clear(self):
     self.value = ''
-    self.input_error = False
     self.input_label.set_text(self.value)
 
   def update(self):
@@ -121,17 +165,11 @@ class IpInput:
       if pyxel.btnp(key) and self._is_under_char_limit():
         self.value += self.valid_inputs[key]
         self.input_label.set_text(self.value)
-        self._validate_input()
 
     if pyxel.btnp(pyxel.KEY_BACKSPACE) and self.value:
+      self.connection_error = False
       self.value = self.value[0:len(self.value) - 1]
       self.input_label.set_text(self.value)
-      self._validate_input()
-
-    if pyxel.btnp(pyxel.KEY_ENTER):
-      print("Submit attempted:\t{}".format(self.value))
-      if not self.input_error:
-        self.input_submitted = True
 
   def draw(self):
     if self.input_empty:
@@ -139,9 +177,9 @@ class IpInput:
     else:
       self.input_label.draw()
 
-    pyxel.rectb(self.origin[0], self.origin[1], self.width, self.height, 8 if self.input_error and self.value else 12)
+    pyxel.rectb(self.origin[0], self.origin[1], self.input_box_width, self.input_box_height, 8 if self.connection_error else 12)
 
     # draw a blinking cursor
     if pyxel.frame_count % 30 > 15:
       cursor_x = self.input_label.origin[0] + self.input_label.width + 1
-      pyxel.line(cursor_x, self.input_label.top - 2, cursor_x, self.input_label.bottom + 2, col=2)
+      pyxel.line(cursor_x, self.input_placeholder_label.top - 1, cursor_x, self.input_placeholder_label.bottom + 1, col=2)

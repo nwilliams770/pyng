@@ -75,23 +75,13 @@ class MainMenu():
 
     elif self.state == MenuState.LAN_CONNECT:
       self.lan_connection_menu.update()
-      # Whenever we're on the multiplayer screen, make sure we're running our server
-      # so someone can connect to us.
-      # Also, each frame, check if someone has connected.
-      if not self.multiplayer.server.is_started:
-        self.multiplayer.server.start()
 
-      if self.multiplayer.server.check_for_connection():
+      if self.lan_connection_menu.connected:
         self.match_type = match_type.LANMultiplayer()
-      elif pyxel.btnp(pyxel.KEY_ENTER):
-        # Alternatively, a player can input their foe's address and initiate a connection
-        # TODO - this is just the ENTEr key for now; make this on typing and submitting
-        #        a valid host
-        self.multiplayer.connect(host='127.0.0.1', port=5001 if self.multiplayer.port == 5002 else 5002)
-        self.match_type = match_type.LANMultiplayer()
+        self.lan_connection_menu.connected = False
       elif self.lan_connection_menu.navigate_to_menu:
         self.state = MenuState.SELECTION_MENU
-        self.lan_connection_menu.navigate_to_menu = None
+        self.lan_connection_menu.navigate_to_menu = False
 
     elif self.state == MenuState.CREDITS:
       self.credits_screen.update()
