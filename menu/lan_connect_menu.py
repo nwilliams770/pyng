@@ -11,7 +11,7 @@ TODO:
 - Refactor connection logic based off user input
 - Test on different devices
 - Test functionality for when user is connected to
--
+- Clear errors when submitting
 """
 
 
@@ -65,7 +65,7 @@ class LANConnectMenu():
       if self.frame == 90:
         host = self.ip_input.value
         try:
-          # self.multiplayer.connect(host='127.0.0.1', port=5001 if self.multiplayer.port == 5002 else 5002)
+          self.multiplayer.connect(host='127.0.0.1', port=5001 if self.multiplayer.port == 5002 else 5002)
           self.state = LanConnectMenuState.OPPONENT_FOUND
         except ConnectionError:
           self.connection_error()

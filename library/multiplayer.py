@@ -8,6 +8,11 @@ import struct
 class NoMessageError(Exception):
   pass
 
+
+class DisconnectError(Exception):
+  pass
+
+
 class Multiplayer:
   def __init__(self, port):
     self.port = port
@@ -40,10 +45,13 @@ class Multiplayer:
     self._is_primary = False
 
   def send(self, message):
-    if self.is_primary:
-      self.server.send(message)
-    else:
-      self.client.send(message)
+    try:
+      if self.is_primary:
+        self.server.send(message)
+      else:
+        self.client.send(message)
+    except BrokenPipeError:
+      raise DisconnectError()
 
   def check_for_received_message(self):
     if self.is_primary:
@@ -87,7 +95,10 @@ class MultiplayerServer:
     _send(self.client, message)
 
   def check_for_received_message(self):
-    return _check_for_received_message(self.client)
+    try:
+      return _check_for_received_message(self.client)
+    except ConnectionResetError:
+      raise DisconnectError()
 
   def shutdown(self):
     if self.client:
@@ -123,7 +134,10 @@ class MultiplayerClient:
     _send(self.server, message)
 
   def check_for_received_message(self):
-    return _check_for_received_message(self.server)
+    try:
+      return _check_for_received_message(self.server)
+    except ConnectionResetError:
+      raise DisconnectError()
 
 
 _HEADER_FORMAT_STR = '!I'
@@ -149,9 +163,13 @@ def _send(sock, data):
 
 
 def _check_for_received_message(sock):
-  read, _, _ = select.select([sock], [], [], 0.0)
+  read, _, _ = select.select([sock], [], [], 1.0/60.0)
   if read:
+    message = None
     packed_message_len = sock.recv(_HEADER_LEN)
+    if len(packed_message_len) != _HEADER_LEN:
+      raise DisconnectError()
+
     message_len = struct.unpack(_HEADER_FORMAT_STR, packed_message_len)[0]
     data = sock.recv(message_len)
     message = json.loads(data.decode())
