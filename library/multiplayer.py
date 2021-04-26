@@ -5,8 +5,7 @@ import json
 import struct
 
 
-class NoMessageError(Exception):
-  pass
+MAX_WAIT_FOR_DATA_SEC = 0.5
 
 
 class DisconnectError(Exception):
@@ -163,15 +162,21 @@ def _send(sock, data):
 
 
 def _check_for_received_message(sock):
-  read, _, _ = select.select([sock], [], [], 1.0/60.0)
-  if read:
-    message = None
-    packed_message_len = sock.recv(_HEADER_LEN)
-    if len(packed_message_len) != _HEADER_LEN:
-      raise DisconnectError()
+  read, _, _ = select.select([sock], [], [], MAX_WAIT_FOR_DATA_SEC)
+  if not read:
+    raise DisconnectError()
 
-    message_len = struct.unpack(_HEADER_FORMAT_STR, packed_message_len)[0]
-    data = sock.recv(message_len)
-    message = json.loads(data.decode())
-    return message
-  return None
+  try:
+    packed_message_len = sock.recv(_HEADER_LEN)
+  except ConnectionResetError:
+    raise DisconnectError()
+
+  if len(packed_message_len) != _HEADER_LEN:
+    raise DisconnectError()
+
+  message_len = struct.unpack(_HEADER_FORMAT_STR, packed_message_len)[0]
+  data = sock.recv(message_len)
+  message = json.loads(data.decode())
+  return message
+
+

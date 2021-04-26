@@ -39,12 +39,11 @@ class Match():
       self.frame = 0
       self.match_phase = MatchPhase.STARTING
       self.engine = engine.Engine()
-      self.consecutive_dropped_responses = 0
 
   def update(self):
     if self.is_primary:
-      self.frame += 1
       self.update_as_primary()
+      self.frame += 1
     else:
       self.update_as_secondary()
 
@@ -57,94 +56,83 @@ class Match():
       elif self.replay_menu.selection == "RETURN TO MENU":
         self.return_to_menu = True
 
-  def send(self, state):
+  def send(self, msg):
     try:
-      self.multiplayer.send(self.state)
+      self.multiplayer.send(msg)
     except multiplayer.DisconnectError:
+      if self.is_primary:
+        self.match_phase = MatchPhase.DISCONNECTED
       return False
 
     return True
 
   def update_as_primary(self):
-    if self.match_phase == MatchPhase.STARTING:
-      self.state = {'phase': 'starting', 'frame': self.frame}
-      if self.multiplayer.is_connected:
-        if not self.send(self.state):
-          self.show_disconnected_as_primary()
-
-      if self.frame >= 120:
-        self.match_phase = MatchPhase.PLAYING
-
-    if self.match_phase == MatchPhase.PLAYING:
-      # If we're playing, get the inputs
-      try:
-        p1_input, p2_input = self.get_inputs()
-      except multiplayer.NoMessageError:
-        print(f"Did not hear inputs from Secondary, {self.consecutive_dropped_responses} in a row!")
-        self.consecutive_dropped_responses += 1
-        if self.consecutive_dropped_responses > 7:
-          self.show_disconnected_as_primary()
-        return
-
-      # Reset if we've gotten inputs successfully
-      self.consecutive_dropped_responses = 0
-      self.state = self.engine.update(p1_input, p2_input)
-      if self.multiplayer.is_connected:
-        if not self.send(self.state):
-          self.show_disconnected_as_primary()
-
-      if winner := self.engine.check_for_winner():
-        self.winner = winner
-        self.match_phase = MatchPhase.END
-
-    if self.match_phase == MatchPhase.END:
-      self.state['phase'] = 'end'
-      self.state['frame'] = self.frame
-      self.state['winner'] = self.winner
-
-      if self.multiplayer.is_connected:
-        if not self.send(self.state):
-          self.show_disconnected_as_primary()
-
-      self.update_replay_menu()
-
     if self.match_phase == MatchPhase.DISCONNECTED:
-      self.state['phase'] = 'disconnected'
+      self.state = {'phase': 'disconnected'}
+    else:
+      if self.frame == 0:
+        # On the first frame, we expect no inputs yet
+        pass
+      else:
+        try:
+          p1_input, p2_input = self.get_inputs()
+        except multiplayer.DisconnectError:
+          self.match_phase = MatchPhase.DISCONNECTED
+          return
 
-  def show_disconnected_as_primary(self):
-    self.match_phase = MatchPhase.DISCONNECTED
+      if self.match_phase == MatchPhase.STARTING:
+        self.state = {'phase': 'starting', 'frame': self.frame}
+        ok = self.send(self.state)
+        if not ok:
+          return
+
+        if self.frame >= 120:
+          self.match_phase = MatchPhase.PLAYING
+          print("Primary has just entered playing phase")
+      elif self.match_phase == MatchPhase.PLAYING:
+        # Reset if we've gotten inputs successfully
+        self.state = self.engine.update(p1_input, p2_input)
+        ok = self.send(self.state)
+        if not ok:
+          return
+
+        if winner := self.engine.check_for_winner():
+          self.winner = winner
+          self.match_phase = MatchPhase.END
+
+      elif self.match_phase == MatchPhase.END:
+        self.state['phase'] = 'end'
+        self.state['frame'] = self.frame
+        self.state['winner'] = self.winner
+        self.send(self.state)
+        self.update_replay_menu()
 
   def update_as_secondary(self):
     if self.state and self.state.get('phase') == 'disconnected':
-      #TODO - update disconnect menu?
+      print("Seconday in disconnected state")
       return
 
     try:
       self.state = self.multiplayer.check_for_received_message()
     except multiplayer.DisconnectError:
-      # we dead
+      # they dead
       self.state = { 'phase': 'disconnected' }
-      return
-
-    if not self.state:
-      # TODO error handling if state not received for x frames?
-      print("Attempted update as secondary: did not receive any state")
+      print("Seconday moved to disconnected state")
       return
 
     # Ack by sending back which keys are currently pressed
-    # Note: here is a good place to test dropped connections for error messaging
-    #just replace below line with: if self.state['phase'] == 'playing'
-    if self.state['phase'] == 'playing' or self.state['phase'] == 'starting':
+    if self.state.get('phase') == 'playing' or self.state.get('phase') == 'starting':
       _, p2_input = self.get_inputs()
-      message = {
-        'key_pressed': p2_input
-      }
-      if not self.send(message):
+      message = { 'key_pressed': p2_input }
+    elif self.state['phase'] == 'end':
+      self.update_replay_menu()
+      message = { 'key_pressed': None, 'replay': self.replay }
+
+    ok = self.send(message)
+    if not ok:
+        print("Secondary wasn't able to send its inputs")
         # if we cannot send, we're disconnected :(
         self.state = { 'phase': 'disconnected' }
-
-    if self.state['phase'] == 'end':
-      self.update_replay_menu()
 
   def draw(self):
     if not self.state:
@@ -187,9 +175,8 @@ class Match():
       elif pyxel.btn(pyxel.KEY_L):
         p2_input = pyxel.KEY_L
     else:
+      print("Primary checking for message")
       ack_message = self.multiplayer.check_for_received_message()
-      if not ack_message or 'key_pressed' not in ack_message:
-        raise multiplayer.NoMessageError()
       p2_input = ack_message['key_pressed']
 
     return (p1_input, p2_input)
