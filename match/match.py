@@ -3,9 +3,16 @@ A 1-on-1 game instance
 
 Should update or draw from state in ALL game cases?
   -- Always draw from state, regardless of game mode
-
-
 """
+
+# TODO:
+# - Replay: if match is end, primary needs to check for secondary
+# - On replay opt, need to show message waiting for player input
+# - On disconnect, show message to user, wait for 1-2s, then go back to main menu
+#
+# - Style board
+# - Potentially look into collision detection? some weird behaviors sometimes
+# - Coming soon on vs AI
 
 import pyxel
 import random
@@ -28,9 +35,10 @@ class Match():
     self.state = None
     self.match_type = match_type
     self.winner = None
-    self.replay_menu = replay_menu.ReplayMenu()
-    self.return_to_menu = False
-    self.replay = False
+    # self.replay_menu = replay_menu.ReplayMenu()
+    # self.return_to_menu = False
+    # self.replay = False
+    self.game_over = False
 
     self.multiplayer = multiplayer
     self.is_primary = multiplayer.is_primary
@@ -39,6 +47,7 @@ class Match():
       self.frame = 0
       self.match_phase = MatchPhase.STARTING
       self.engine = engine.Engine()
+    self.multiplayer.start_new_game()
 
   def update(self):
     if self.is_primary:
@@ -47,14 +56,14 @@ class Match():
     else:
       self.update_as_secondary()
 
-  def update_replay_menu(self):
-    self.replay_menu.update()
+  # def update_replay_menu(self):
+  #   self.replay_menu.update()
 
-    if self.replay_menu.selection:
-      if self.replay_menu.selection == "REMATCH":
-        self.replay = True
-      elif self.replay_menu.selection == "RETURN TO MENU":
-        self.return_to_menu = True
+  #   if self.replay_menu.selection:
+  #     if self.replay_menu.selection == "REMATCH":
+  #       self.replay = True
+  #     elif self.replay_menu.selection == "RETURN TO MENU":
+  #       self.return_to_menu = True
 
   def send(self, msg):
     try:
@@ -82,9 +91,10 @@ class Match():
 
       if self.match_phase == MatchPhase.STARTING:
         self.state = {'phase': 'starting', 'frame': self.frame}
-        ok = self.send(self.state)
-        if not ok:
-          return
+        if isinstance(self.match_type, match_type.LANMultiplayer):
+          ok = self.send(self.state)
+          if not ok:
+            return
 
         if self.frame >= 120:
           self.match_phase = MatchPhase.PLAYING
@@ -92,20 +102,29 @@ class Match():
       elif self.match_phase == MatchPhase.PLAYING:
         # Reset if we've gotten inputs successfully
         self.state = self.engine.update(p1_input, p2_input)
-        ok = self.send(self.state)
-        if not ok:
-          return
+        if isinstance(self.match_type, match_type.LANMultiplayer):
+          ok = self.send(self.state)
+          if not ok:
+            return
 
         if winner := self.engine.check_for_winner():
           self.winner = winner
           self.match_phase = MatchPhase.END
+          self.frame = 0 # reset the frame count to determine when to transition to rematch screen
 
       elif self.match_phase == MatchPhase.END:
         self.state['phase'] = 'end'
         self.state['frame'] = self.frame
         self.state['winner'] = self.winner
-        self.send(self.state)
-        self.update_replay_menu()
+        if isinstance(self.match_type, match_type.LANMultiplayer):
+          ok = self.send(self.state)
+          if not ok:
+            return
+        # self.update_replay_menu()
+        if self.frame >= 60:
+          self.game_over = True
+      elif self.match_phase == MatchPhase.DISCONNECTED:
+        pass
 
   def update_as_secondary(self):
     if self.state and self.state.get('phase') == 'disconnected':
@@ -125,8 +144,10 @@ class Match():
       _, p2_input = self.get_inputs()
       message = { 'key_pressed': p2_input }
     elif self.state['phase'] == 'end':
-      self.update_replay_menu()
-      message = { 'key_pressed': None, 'replay': self.replay }
+      # self.update_replay_menu()
+      if self.state.get('frame') >= 60:
+        self.game_over = True
+      message = { 'key_pressed': None }
 
     ok = self.send(message)
     if not ok:
@@ -140,9 +161,9 @@ class Match():
 
     renderer.draw_from_state(self.state)
 
-    if self.state['phase'] == 'end':
-      self.replay_menu.draw()
-    elif self.state['phase'] == 'disconnected':
+    # if self.state['phase'] == 'end':
+      # self.replay_menu.draw()
+    if self.state['phase'] == 'disconnected':
       # TODO - clean this up? have a new object? tbd
       import constants
       pyxel.rect(0, 0, constants.GAME_WIDTH, constants.GAME_HEIGHT, col=5)
@@ -175,7 +196,6 @@ class Match():
       elif pyxel.btn(pyxel.KEY_L):
         p2_input = pyxel.KEY_L
     else:
-      print("Primary checking for message")
       ack_message = self.multiplayer.check_for_received_message()
       p2_input = ack_message['key_pressed']
 

@@ -3,6 +3,7 @@ import socket
 import select
 import json
 import struct
+import time
 
 
 MAX_WAIT_FOR_DATA_SEC = 0.5
@@ -58,6 +59,9 @@ class Multiplayer:
     else:
       return self.client.check_for_received_message()
 
+  def start_new_game(self):
+    if self.is_primary:
+      self.server.game_id = time.time()
 
 class MultiplayerServer:
   def __init__(self, port):
@@ -65,6 +69,7 @@ class MultiplayerServer:
     self.sock = None
     self.client = None
     self.client_addr = None
+    self.game_id = None
 
   @property
   def is_started(self):
@@ -91,13 +96,13 @@ class MultiplayerServer:
     if not self.is_connected:
       raise RuntimeError("Not connected!")
 
-    _send(self.client, message)
+    _send(self.client, message, self.game_id)
 
   def check_for_received_message(self):
-    try:
-      return _check_for_received_message(self.client)
-    except ConnectionResetError:
-      raise DisconnectError()
+    while True:
+      message = _check_for_received_message(self.client)
+      if message.pop('game_id', None) == self.game_id:
+        return message
 
   def shutdown(self):
     if self.client:
@@ -117,6 +122,7 @@ class MultiplayerClient:
     self.host = None
     self.port = None
     self.server = None
+    self.game_id = None
 
   def connect(self, host, port):
     self.host = host
@@ -130,25 +136,26 @@ class MultiplayerClient:
     if not self.server:
       raise RuntimeError("Not connected!")
 
-    _send(self.server, message)
+    _send(self.server, message, self.game_id)
 
   def check_for_received_message(self):
-    try:
-      return _check_for_received_message(self.server)
-    except ConnectionResetError:
-      raise DisconnectError()
+    message = _check_for_received_message(self.server)
+    self.game_id = message.pop('game_id', None)
+    return message
 
 
 _HEADER_FORMAT_STR = '!I'
 _HEADER_LEN = 4
 
 
-def _send(sock, data):
+def _send(sock, data, game_id):
   """
   |  |  |  |  |  |  | ... |  |
   |<- 4B Len->|<--  data  -->|
   """
 
+  data['game_id'] = game_id
+  print("message being sent", data)
   # Convert the data to a json str as bytes
   data_as_json_bytes = str.encode(json.dumps(data))
 
@@ -175,8 +182,10 @@ def _check_for_received_message(sock):
     raise DisconnectError()
 
   message_len = struct.unpack(_HEADER_FORMAT_STR, packed_message_len)[0]
-  data = sock.recv(message_len)
+  try:
+    data = sock.recv(message_len)
+  except ConnectionResetError:
+    raise DisconnectError()
   message = json.loads(data.decode())
+  print("message being received", message)
   return message
-
-

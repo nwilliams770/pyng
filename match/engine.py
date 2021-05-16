@@ -2,19 +2,6 @@
 Responsible for the Pong Game Engine
 """
 
-# TODOS:
-# - Error states + messaging:
-#        - Primary disconnects (make sure to terminate multiplayer + all cleanup)
-#        - Secondary disconnects (make sure to terminate multiplayer + all cleanup)
-#        - Primary + secondary opt for rematch
-#        - Primary opts for rematch, secondary goes to main menu
-#        - Secondary opts for rematch, primary goes to main menu
-#
-# - Style board
-# - Potentially look into collision detection? some weird behaviors sometimes
-# - Coming soon on vs AI
-
-
 import pyxel
 import random
 import math

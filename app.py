@@ -12,6 +12,7 @@ the app instantiates a match, ...
 
 """
 import argparse
+from match.match_type import MatchType
 import time
 import pyxel
 
@@ -19,6 +20,8 @@ from app_state import AppState
 from library import multiplayer
 from menu import main_menu, menu_state
 from match import match
+from rematch import rematch_menu
+
 import constants
 
 PALETTE = [0x000000, 0xFFFFFF, 0x62FFFF, 0xBBFFFF, 0x71FF50, 0xB8FFA7, 0xFFE600, 0xFFF281, 0xD7160D, 0xFF3E35, 0xC31BFF, 0xCF49FF, 0x000A8D, 0x000DBC, 0x0, 0x0]
@@ -29,6 +32,7 @@ class App:
 
     self.main_menu = None
     self.match = None
+    self.rematch_menu = None
     self.game_over = None
     self.credits = None
 
@@ -43,17 +47,37 @@ class App:
     if self.state is None:
       self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
     elif self.state == AppState.MAIN_MENU:
-
       if self.main_menu.match_type:
         self.transition_to(state=AppState.MATCH, match_type=self.main_menu.match_type, multiplayer=self.multiplayer)
     elif self.state == AppState.MATCH:
-      if self.match.return_to_menu:
+
+      if self.match.game_over:
+        self.transition_to(state=AppState.REMATCH_MENU, match_type=self.main_menu.match_type, multiplayer=self.multiplayer)
+
+    elif self.state == AppState.REMATCH_MENU:
+        # self.transition_to((state))
+      if self.rematch_menu.return_to_main_menu:
+        # TODO: probably want to reset multiplayer?
+        # Reset menu
         self.main_menu.match_type = None
         self.main_menu.state = menu_state.MenuState.SELECTION_MENU
         self.match = None
         self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
-      elif self.match.replay:
-        self.match = match.Match(self.main_menu.match_type, self.multiplayer)
+      elif self.rematch_menu.restart_match:
+        self.transition_to(state=AppState.MATCH, match_type=self.main_menu.match_type, multiplayer=self.multiplayer)
+      # elif self.rematch_menu
+
+      # if self.match.return_to_menu:
+      #   # self.multiplayer.disconnect()
+      #   self.main_menu.match_type = None
+      #   self.main_menu.state = menu_state.MenuState.SELECTION_MENU
+      #   self.match = None
+      #   self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
+
+      # # NONE OF THIS, MATCH REPLAY LOGIC SHOULD ALL EXIST IN A SINGLE INSTANTIATION OF A MATCH
+      # # CREATE NEW REMATCH SCREEN to handle rematch logic, communication of data
+      # elif self.match.replay:
+      #   self.match = match.Match(self.main_menu.match_type, self.multiplayer)
 
 
     # Now, update for the current state
@@ -61,16 +85,21 @@ class App:
       self.main_menu.update()
     elif self.state == AppState.MATCH:
       self.match.update()
+    elif self.state == AppState.REMATCH_MENU:
+      self.rematch_menu.update()
 
   def transition_to(self, state, **kwargs):
     assert(state != self.state)
     print(f"\t Transition to {state}")
 
-    if state == AppState.MAIN_MENU and self.main_menu is None:
+    if state == AppState.MAIN_MENU:
       self.main_menu = main_menu.MainMenu(**kwargs)
 
     if state == AppState.MATCH:
       self.match = match.Match(**kwargs)
+
+    if state == AppState.REMATCH_MENU:
+      self.rematch_menu = rematch_menu.RematchMenu(**kwargs)
 
     self.state = state
 
@@ -82,6 +111,8 @@ class App:
       self.main_menu.draw()
     elif self.state == AppState.MATCH:
       self.match.draw()
+    elif self.state == AppState.REMATCH_MENU:
+      self.rematch_menu.draw()
 
 
 if __name__ == '__main__':
