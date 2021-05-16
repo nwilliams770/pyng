@@ -114,6 +114,3 @@ class MainMenu():
 
     elif self.state == MenuState.LAN_CONNECT:
       self.lan_connection_menu.draw()
-
-
-# self.input = ip_input.IpInput(screen_width=140, screen_height=105, bg_color=7, text_color=13) #Todo: pull these vals from config
