@@ -63,6 +63,9 @@ class Multiplayer:
     if self.is_primary:
       self.server.game_id = time.time()
 
+  def shutdown(self):
+    self.server.shutdown()
+
 class MultiplayerServer:
   def __init__(self, port):
     self.port = port
@@ -106,13 +109,14 @@ class MultiplayerServer:
 
   def shutdown(self):
     if self.client:
-      self.client.shutdown()
+      self.client.shutdown(socket.SHUT_RDWR)
       self.client.close()
       self.client = None
       self.client_addr = None
 
-    if self.sock:
-      self.sock.shutdown()
+    # Only shutdown socket if its connected
+    if self.sock and self.check_for_connection():
+      self.sock.shutdown(socket.SHUT_RDWR)
       self.sock.close()
       self.sock = None
 
@@ -155,7 +159,6 @@ def _send(sock, data, game_id):
   """
 
   data['game_id'] = game_id
-  print("message being sent", data)
   # Convert the data to a json str as bytes
   data_as_json_bytes = str.encode(json.dumps(data))
 
@@ -187,5 +190,4 @@ def _check_for_received_message(sock):
   except ConnectionResetError:
     raise DisconnectError()
   message = json.loads(data.decode())
-  print("message being received", message)
   return message

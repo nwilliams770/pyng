@@ -12,15 +12,12 @@ the app instantiates a match, ...
 
 """
 import argparse
-from match.match_type import MatchType
-import time
 import pyxel
 
 from app_state import AppState
 from library import multiplayer
-from menu import main_menu, menu_state
+from menu import main_menu, rematch_menu, menu_state
 from match import match
-from rematch import rematch_menu
 
 import constants
 
@@ -60,24 +57,12 @@ class App:
         # TODO: probably want to reset multiplayer?
         # Reset menu
         self.main_menu.match_type = None
-        self.main_menu.state = menu_state.MenuState.SELECTION_MENU
         self.match = None
+        self.multiplayer.shutdown()
+        self.main_menu.state = menu_state.MenuState.SELECTION_MENU
         self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
       elif self.rematch_menu.restart_match:
         self.transition_to(state=AppState.MATCH, match_type=self.main_menu.match_type, multiplayer=self.multiplayer)
-      # elif self.rematch_menu
-
-      # if self.match.return_to_menu:
-      #   # self.multiplayer.disconnect()
-      #   self.main_menu.match_type = None
-      #   self.main_menu.state = menu_state.MenuState.SELECTION_MENU
-      #   self.match = None
-      #   self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
-
-      # # NONE OF THIS, MATCH REPLAY LOGIC SHOULD ALL EXIST IN A SINGLE INSTANTIATION OF A MATCH
-      # # CREATE NEW REMATCH SCREEN to handle rematch logic, communication of data
-      # elif self.match.replay:
-      #   self.match = match.Match(self.main_menu.match_type, self.multiplayer)
 
 
     # Now, update for the current state
@@ -92,7 +77,7 @@ class App:
     assert(state != self.state)
     print(f"\t Transition to {state}")
 
-    if state == AppState.MAIN_MENU:
+    if state == AppState.MAIN_MENU and not self.main_menu:
       self.main_menu = main_menu.MainMenu(**kwargs)
 
     if state == AppState.MATCH:
