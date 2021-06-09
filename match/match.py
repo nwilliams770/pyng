@@ -6,10 +6,7 @@ Should update or draw from state in ALL game cases?
 """
 
 # TODO:
-# - Replay: if match is end, primary needs to check for secondary
-# - On replay opt, need to show message waiting for player input
-# - On disconnect, show message to user, wait for 1-2s, then go back to main menu
-#
+# - look into fixing multi player
 # - Style board
 # - Potentially look into collision detection? some weird behaviors sometimes
 # - Coming soon on vs AI
@@ -20,7 +17,9 @@ import math
 from enum import Enum
 
 from library import multiplayer
-from match import match_type, engine, renderer, replay_menu
+from label import ray_label
+from match import match_type, engine, renderer
+import constants
 from match.constants import *
 
 
@@ -35,13 +34,12 @@ class Match():
     self.state = None
     self.match_type = match_type
     self.winner = None
-    # self.replay_menu = replay_menu.ReplayMenu()
-    # self.return_to_menu = False
-    # self.replay = False
     self.game_over = False
-
+    self.return_to_main_menu = False
     self.multiplayer = multiplayer
     self.is_primary = multiplayer.is_primary
+    self.disconnected_header = ray_label.RayLabel(text='Disconnected', size=16.0, colors=(8,9), origin=(constants.GAME_WIDTH * .5, 80), alignment=ray_label.Alignment.CENTER)
+    self.disconnected_message = ray_label.RayLabel(text='Returning to main menu', size=4.0, colors=(8,9), origin=(constants.GAME_WIDTH * .5, 100), alignment=ray_label.Alignment.CENTER)
 
     if self.is_primary:
       self.frame = 0
@@ -56,28 +54,21 @@ class Match():
     else:
       self.update_as_secondary()
 
-  # def update_replay_menu(self):
-  #   self.replay_menu.update()
-
-  #   if self.replay_menu.selection:
-  #     if self.replay_menu.selection == "REMATCH":
-  #       self.replay = True
-  #     elif self.replay_menu.selection == "RETURN TO MENU":
-  #       self.return_to_menu = True
-
   def send(self, msg):
     try:
       self.multiplayer.send(msg)
     except multiplayer.DisconnectError:
       if self.is_primary:
         self.match_phase = MatchPhase.DISCONNECTED
+        self.frame = 0
       return False
-
     return True
 
   def update_as_primary(self):
     if self.match_phase == MatchPhase.DISCONNECTED:
       self.state = {'phase': 'disconnected'}
+      if self.frame >= 45:
+        self.return_to_main_menu = True
     else:
       if self.frame == 0:
         # On the first frame, we expect no inputs yet
@@ -87,6 +78,7 @@ class Match():
           p1_input, p2_input = self.get_inputs()
         except multiplayer.DisconnectError:
           self.match_phase = MatchPhase.DISCONNECTED
+          self.frame = 0
           return
 
       if self.match_phase == MatchPhase.STARTING:
@@ -120,7 +112,6 @@ class Match():
           ok = self.send(self.state)
           if not ok:
             return
-        # self.update_replay_menu()
         if self.frame >= 60:
           self.game_over = True
       elif self.match_phase == MatchPhase.DISCONNECTED:
@@ -129,13 +120,15 @@ class Match():
   def update_as_secondary(self):
     if self.state and self.state.get('phase') == 'disconnected':
       print("Seconday in disconnected state")
+      if self.frame >= 45:
+        self.return_to_main_menu = True
       return
 
     try:
       self.state = self.multiplayer.check_for_received_message()
     except multiplayer.DisconnectError:
-      # they dead
       self.state = { 'phase': 'disconnected' }
+      self.frame = 0
       print("Seconday moved to disconnected state")
       return
 
@@ -154,6 +147,7 @@ class Match():
         print("Secondary wasn't able to send its inputs")
         # if we cannot send, we're disconnected :(
         self.state = { 'phase': 'disconnected' }
+        self.frame = 0
 
   def draw(self):
     if not self.state:
@@ -161,12 +155,13 @@ class Match():
 
     renderer.draw_from_state(self.state)
 
-    # if self.state['phase'] == 'end':
-      # self.replay_menu.draw()
     if self.state['phase'] == 'disconnected':
       # TODO - clean this up? have a new object? tbd
-      import constants
-      pyxel.rect(0, 0, constants.GAME_WIDTH, constants.GAME_HEIGHT, col=5)
+      pyxel.cls(0)
+      self.disconnected_header.draw()
+      self.disconnected_message.draw()
+
+
 
 # TODO: move to engine? only ever called by the primary
   def get_inputs(self):
