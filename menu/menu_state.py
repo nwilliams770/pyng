@@ -3,9 +3,10 @@ from enum import Enum
 class MenuState(Enum):
   TITLE_SCREEN = 1
   SELECTION_MENU = 2
-  LAN_CONNECT = 3
-  CREDITS = 4
-  CONTROLS = 5
+  AI_MENU = 3
+  LAN_CONNECT = 4
+  CREDITS = 5
+  CONTROLS = 6
 
 class LanConnectMenuState(Enum):
   COLLECTING_INPUT = 1

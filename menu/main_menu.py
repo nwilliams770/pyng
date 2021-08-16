@@ -20,6 +20,7 @@ import pyxel
 
 from .menu_state import MenuState
 from .selection_menu import SelectionMenu
+from .ai_menu import AIMenu
 from .lan_connect_menu import LANConnectMenu
 from .title_screen import TitleScreen
 from .credits_screen import CreditsScreen
@@ -39,6 +40,7 @@ class MainMenu():
     self.match_type = None
 
     self.selection_menu = SelectionMenu(primary_options=['LOCAL MULTIPLAYER', 'ARTIFICIAL INTELLIGENCE', 'LAN CONNECT'], secondary_options=['CREDITS', 'CONTROLS'], option_padding=15, options_padding=20)
+    self.ai_menu = AIMenu()
     self.lan_connection_menu = LANConnectMenu(multiplayer=multiplayer)
     self.title_screen = TitleScreen()
     self.credits_screen = CreditsScreen()
@@ -60,8 +62,8 @@ class MainMenu():
         if self.selection_menu.selection == 'LOCAL MULTIPLAYER':
           self.match_type = match_type.LocalMultiplayer()
         elif self.selection_menu.selection == 'ARTIFICIAL INTELLIGENCE':
-          # self.match_type = match_type.LocalAI()
-          print("Selected AI")
+          self.state = MenuState.AI_MENU
+          # self.state = match_type.LocalAI()
         elif self.selection_menu.selection == 'LAN CONNECT':
           self.state = MenuState.LAN_CONNECT
         elif self.selection_menu.selection == 'CREDITS':
@@ -72,6 +74,12 @@ class MainMenu():
         # Once we've taken the appropriate action based on user selection, reset
         # the selection for future times we'll land on this menu
         self.selection_menu.selection = None
+
+    elif self.state == MenuState.AI_MENU:
+      self.ai_menu.update()
+      if self.ai_menu.navigate_to_menu:
+        self.state = MenuState.SELECTION_MENU
+        self.ai_menu.navigate_to_menu = False
 
     elif self.state == MenuState.LAN_CONNECT:
       self.lan_connection_menu.update()
@@ -114,3 +122,6 @@ class MainMenu():
 
     elif self.state == MenuState.LAN_CONNECT:
       self.lan_connection_menu.draw()
+
+    elif self.state == MenuState.AI_MENU:
+      self.ai_menu.draw()
