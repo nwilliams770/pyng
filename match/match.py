@@ -5,7 +5,7 @@ Should update or draw from state in ALL game cases?
   -- Always draw from state, regardless of game mode
 """
 
-# TODO:
+# TODO
 # - look into fixing multi player
 # - Style board
 # - Potentially look into collision detection? some weird behaviors sometimes
@@ -120,6 +120,8 @@ class Match():
   def update_as_secondary(self):
     if self.state and self.state.get('phase') == 'disconnected':
       print("Seconday in disconnected state")
+      # If we've disconnected, secondary manages its own frame count now
+      self.frame += 1
       if self.frame >= 45:
         self.return_to_main_menu = True
       return
@@ -142,12 +144,13 @@ class Match():
         self.game_over = True
       message = { 'key_pressed': None }
 
-    ok = self.send(message)
-    if not ok:
-        print("Secondary wasn't able to send its inputs")
-        # if we cannot send, we're disconnected :(
-        self.state = { 'phase': 'disconnected' }
-        self.frame = 0
+    if self.state.get('phase') != 'disconnected':
+      ok = self.send(message)
+      if not ok:
+          print("Secondary wasn't able to send its inputs")
+          # if we cannot send, we're disconnected :(
+          self.state = { 'phase': 'disconnected' }
+          self.frame = 0
 
   def draw(self):
     if not self.state:
@@ -156,7 +159,6 @@ class Match():
     renderer.draw_from_state(self.state)
 
     if self.state['phase'] == 'disconnected':
-      # TODO - clean this up? have a new object? tbd
       pyxel.cls(0)
       self.disconnected_header.draw()
       self.disconnected_message.draw()

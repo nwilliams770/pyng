@@ -57,6 +57,8 @@ class LANConnectMenu():
       self.ip_input.update()
 
       if pyxel.btnp(pyxel.KEY_ENTER) and not self.ip_input.input_empty:
+        # clear any prev errors
+        self.clear_connection_error()
         self.state = LanConnectMenuState.CONNECTING
 
     elif self.state == LanConnectMenuState.CONNECTING:
@@ -104,9 +106,12 @@ class LANConnectMenu():
   def connection_error(self):
     self.ip_input.connection_error = True
 
+  def clear_connection_error(self):
+    self.ip_input.connection_error = False
+
   def reset(self):
     self.ip_input.clear()
-    self.input = ''
+    self.state = LanConnectMenuState.COLLECTING_INPUT
 
 class IpInput:
   def __init__(self, center):

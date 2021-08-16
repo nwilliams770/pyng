@@ -34,7 +34,6 @@ class App:
     self.credits = None
 
     self.multiplayer = multiplayer.Multiplayer(port=port)
-    self.role = None
     pyxel.init(constants.GAME_WIDTH, constants.GAME_HEIGHT, scale=4, palette=PALETTE, fps=30, quit_key=pyxel.KEY_ESCAPE)
     pyxel.run(self.update, self.draw)
 
@@ -47,15 +46,20 @@ class App:
       if self.main_menu.match_type:
         self.transition_to(state=AppState.MATCH, match_type=self.main_menu.match_type, multiplayer=self.multiplayer)
     elif self.state == AppState.MATCH:
-
+      # match was finished successfully
       if self.match.game_over:
         self.transition_to(state=AppState.REMATCH_MENU, match_type=self.main_menu.match_type, multiplayer=self.multiplayer)
+      # a player disconnected in LAN match
+      elif self.match.return_to_main_menu:
+        self.main_menu.match_type = None
+        self.match = None
+        self.multiplayer.shutdown()
+        self.main_menu.state = menu_state.MenuState.SELECTION_MENU
+        self.transition_to(state=AppState.MAIN_MENU, multiplayer=self.multiplayer)
 
     elif self.state == AppState.REMATCH_MENU:
         # self.transition_to((state))
       if self.rematch_menu.return_to_main_menu:
-        # TODO: probably want to reset multiplayer?
-        # Reset menu
         self.main_menu.match_type = None
         self.match = None
         self.multiplayer.shutdown()
