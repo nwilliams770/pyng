@@ -28,6 +28,7 @@ class Engine():
       'p2_y': self.player_two.frame.y,
       'p2_score': self.player_two.score,
       'ball_xy': (self.ball.frame.x, self.ball.frame.y),
+      'ball_trail': self.ball.trail,
       'ball_alive': self.ball.alive,
     }
 
@@ -156,9 +157,14 @@ class Player:
 class Ball:
   def __init__(self):
     self.frame = Rect(width=BALL_WIDTH, height=BALL_WIDTH)
+    self.trail = []
     self.reset()
 
   def update(self):
+    self.trail.insert(0, (self.frame.x, self.frame.y))
+    while len(self.trail) > 20:
+      self.trail.pop()
+
     self.frame.x += self.dx
     self.frame.y += self.dy
 

@@ -12,8 +12,6 @@ Should update or draw from state in ALL game cases?
 # - Potentially look into collision detection? some weird behaviors sometimes
 
 import pyxel
-import random
-import math
 from enum import Enum
 
 from library import multiplayer

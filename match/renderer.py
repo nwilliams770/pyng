@@ -51,7 +51,7 @@ def render_end(state):
 
 
 def _render_court():
-  for i in range(0, COURT_HEIGHT, 8):
+  for i in range(-1, COURT_HEIGHT, 10):
     pyxel.rect((COURT_WIDTH / 2 - COURT_TICK_WIDTH / 2), i, COURT_TICK_WIDTH, COURT_TICK_HEIGHT, COURT_TICK_COLOR)
 
 
@@ -62,13 +62,24 @@ def _render_score(state):
 
 
 def _render_p1(state):
-  pyxel.rect(PLAYER_1_X, state['p1_y'], PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_COLOR)
-
+  pyxel.rectb(PLAYER_1_X, state['p1_y'], PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_1_COLOR)
+  pyxel.line(PLAYER_1_X + PLAYER_WIDTH/2, state['p1_y']+2, PLAYER_1_X+PLAYER_WIDTH/2, state['p1_y']+PLAYER_HEIGHT-3, PLAYER_1_COLOR)
 
 def _render_p2(state):
-  pyxel.rect(PLAYER_2_X, state['p2_y'], PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_COLOR)
+  pyxel.rectb(PLAYER_2_X, state['p2_y'], PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_2_COLOR)
+  pyxel.line(PLAYER_2_X + PLAYER_WIDTH/2, state['p2_y']+2, PLAYER_2_X+PLAYER_WIDTH/2, state['p2_y']+PLAYER_HEIGHT-3, PLAYER_2_COLOR)
 
 
 def _render_ball(state):
   ball_x, ball_y = state['ball_xy']
+  ball_trail = state['ball_trail']
+
+  if len(ball_trail) >= 2:
+    ptx, pty = ball_trail[0]
+    for tx, ty in ball_trail:
+      pyxel.line(ptx, pty, tx, ty, BALL_TRAIL_COLOR)
+      ptx = tx
+      pty = ty
+
   pyxel.rect(ball_x, ball_y, BALL_WIDTH, BALL_WIDTH, BALL_COLOR)
+
