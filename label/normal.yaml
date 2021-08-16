@@ -6,8 +6,8 @@ settings:
     unit_glyph_size: [0.75, 1.0]
 
     # For size-1 text, how many pixels should we kern by?
-    # TODO - maybe support per-character custom kerning?
-    #      - or maybe expose this as a parameter on the label class?
+    # TODO maybe support per-character custom kerning?
+    #      or maybe expose this as a parameter on the label class?
     kerning: 0.2
 
 glyphs:

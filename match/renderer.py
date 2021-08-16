@@ -56,7 +56,7 @@ def _render_court():
 
 
 def _render_score(state):
-  # TODO - center these
+  # TODO center these
   pyxel.text(COURT_WIDTH / 2 - 20, 10, str(state['p1_score']), 11)
   pyxel.text(COURT_WIDTH / 2 + 16, 10, str(state['p2_score']), 11)
 
