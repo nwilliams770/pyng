@@ -6,14 +6,6 @@ from .menu_state import LanConnectMenuState
 from label import key_cap_label, ray_label
 from library import multiplayer
 
-"""
-TODO:
-- Refactor connection logic based off user input
-- Test on different devices
-- Test functionality for when user is connected to
-- Clear errors when submitting
-"""
-
 
 class LANConnectMenu():
   def __init__(self, multiplayer):

@@ -6,10 +6,10 @@ Should update or draw from state in ALL game cases?
 """
 
 # TODO
-# - look into fixing multi player
+# - Test multiplayer
 # - Style board
+# - Faster ball speed
 # - Potentially look into collision detection? some weird behaviors sometimes
-# - Coming soon on vs AI
 
 import pyxel
 import random
