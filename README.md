@@ -1,4 +1,4 @@
-# Pyng
+# PYNG
 + Python + LAN + Pong = PYNG
 + A vector-graphics inspired implementation of Pong. Play locally or against a friend over LAN. Built using [pyxel](https://github.com/kitao/pyxel).
 
