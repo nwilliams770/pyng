@@ -24,7 +24,7 @@ import constants
 PALETTE = [0x000000, 0xFFFFFF, 0x62FFFF, 0xBBFFFF, 0x71FF50, 0xB8FFA7, 0xFFE600, 0xFFF281, 0xD7160D, 0xFF3E35, 0xC31BFF, 0xCF49FF, 0x000A8D, 0x000DBC, 0x0, 0x0]
 
 class App:
-  def __init__(self, port):
+  def __init__(self):
     self.state = None
 
     self.main_menu = None
@@ -33,7 +33,7 @@ class App:
     self.game_over = None
     self.credits = None
 
-    self.multiplayer = multiplayer.Multiplayer(port=port)
+    self.multiplayer = multiplayer.Multiplayer(port=constants.MULTIPLAYER_LAN_PORT)
     pyxel.init(constants.GAME_WIDTH, constants.GAME_HEIGHT, scale=4, palette=PALETTE, fps=30, quit_key=pyxel.KEY_ESCAPE)
     pyxel.run(self.update, self.draw)
 
@@ -105,7 +105,4 @@ class App:
 
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--port', type=int)
-  args = parser.parse_args()
-  App(port=args.port)
+  App()

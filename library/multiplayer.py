@@ -20,6 +20,7 @@ class Multiplayer:
     self.client = MultiplayerClient()
     self._is_primary = True
 
+# TODO remove this
   @property
   def is_on_lan(self):
     return self.my_ip != '0.0.0.0'
