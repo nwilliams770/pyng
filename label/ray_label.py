@@ -12,8 +12,8 @@ class Alignment:
 
 class Typeface:
   NORMAL = 'normal.yaml'
-  ULTRAWIDE = 'ultrawide.yaml' #TODO after MVPs
-  NARROW = 'narrow.yaml' #TODO after MVPs
+  ULTRAWIDE = 'ultrawide.yaml' # only 0-9 needed (for player scores)
+  NARROW = 'narrow.yaml' # TODO after MVPs
 
 
 class RayLabel(object):

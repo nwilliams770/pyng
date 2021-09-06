@@ -1,15 +1,9 @@
 """
 A 1-on-1 game instance
-
-Should update or draw from state in ALL game cases?
-  -- Always draw from state, regardless of game mode
 """
 
 # TODO
 # - Test multiplayer
-# - Style board
-# - Faster ball speed
-# - Potentially look into collision detection? some weird behaviors sometimes
 
 import pyxel
 from enum import Enum

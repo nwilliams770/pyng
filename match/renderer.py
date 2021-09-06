@@ -56,9 +56,12 @@ def _render_court():
 
 
 def _render_score(state):
-  # TODO center these
-  pyxel.text(COURT_WIDTH / 2 - 20, 10, str(state['p1_score']), 11)
-  pyxel.text(COURT_WIDTH / 2 + 16, 10, str(state['p2_score']), 11)
+  p1_score_text = str(state['p1_score']) if state['p1_score'] >= 10 else '0' + str(state['p1_score'])
+  p2_score_text = str(state['p2_score']) if state['p2_score'] >= 10 else '0' + str(state['p2_score'])
+  p1_score = ray_label.RayLabel(text=p1_score_text, typeface=ray_label.Typeface.ULTRAWIDE, size=12, colors=(6,7), origin=(0 + 20,COURT_HEIGHT - 5), alignment=ray_label.Alignment.CENTER)
+  p2_score = ray_label.RayLabel(text=p2_score_text, typeface=ray_label.Typeface.ULTRAWIDE, size=12, colors=(12,13), origin=(COURT_WIDTH - 34,COURT_HEIGHT - 5), alignment=ray_label.Alignment.CENTER)
+  p1_score.draw()
+  p2_score.draw()
 
 
 def _render_p1(state):
@@ -72,14 +75,15 @@ def _render_p2(state):
 
 def _render_ball(state):
   ball_x, ball_y = state['ball_xy']
-  ball_trail = state['ball_trail']
+  # TODO: Decide whether to keep ball trail, could be fun for some bonus/secret mode
+  # ball_trail = state['ball_trail']
 
-  if len(ball_trail) >= 2:
-    ptx, pty = ball_trail[0]
-    for tx, ty in ball_trail:
-      pyxel.line(ptx, pty, tx, ty, BALL_TRAIL_COLOR)
-      ptx = tx
-      pty = ty
+  # if len(ball_trail) >= 2:
+  #   ptx, pty = ball_trail[0]
+  #   for tx, ty in ball_trail:
+  #     pyxel.line(ptx, pty, tx, ty, BALL_TRAIL_COLOR)
+  #     ptx = tx
+  #     pty = ty
 
   pyxel.rect(ball_x, ball_y, BALL_WIDTH, BALL_WIDTH, BALL_COLOR)
 

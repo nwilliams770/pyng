@@ -35,6 +35,7 @@ class Engine():
   def update_match(self, p1_input, p2_input):
     if self.check_and_process_score():
       self.ball.alive = False
+      self.ball.trail = []
 
     self.player_one.update(p1_input)
     self.player_two.update(p2_input)
@@ -115,7 +116,7 @@ class Player:
     self.player_num = player_num
     self.score = 0
     initial_x_pos = PLAYER_1_X if player_num == 1 else PLAYER_2_X
-    initial_y_pos = 10 if player_num == 1 else COURT_HEIGHT - 10 - PLAYER_HEIGHT
+    initial_y_pos = 10 if player_num == 1 else GAME_COURT_HEIGHT - 10 - PLAYER_HEIGHT
     self.frame = Rect(x=initial_x_pos, y=initial_y_pos, width=PLAYER_WIDTH, height=PLAYER_HEIGHT)
 
   @property
@@ -142,10 +143,10 @@ class Player:
 
   def update_player_pos(self, dy):
     if dy > 0:
-      if self.frame.bottom + dy <= COURT_HEIGHT:
+      if self.frame.bottom + dy <= GAME_COURT_HEIGHT:
         self.frame.y += dy
-      elif self.frame.bottom + dy >= COURT_HEIGHT:
-        self.frame.y = COURT_HEIGHT - self.frame.height
+      elif self.frame.bottom + dy >= GAME_COURT_HEIGHT:
+        self.frame.y = GAME_COURT_HEIGHT - self.frame.height
 
     if dy < 0:
       if self.frame.top + dy >= 0:
@@ -169,11 +170,11 @@ class Ball:
     self.frame.y += self.dy
 
   def reset(self, last_scorer=None):
-    rand_dx = 2 if random.randint(0, 1) else -2
+    rand_dx = 3 if random.randint(0, 1) else -3
     self.alive = True
     self.frame.x = COURT_WIDTH / 2
-    self.frame.y = COURT_HEIGHT - 1 - self.frame.width if random.randint(0, 1) else 1
-    self.dx = 1 if last_scorer == 1 else (-1 if last_scorer == 2 else rand_dx)
+    self.frame.y = GAME_COURT_HEIGHT - 1 - self.frame.width if random.randint(0, 1) else 1
+    self.dx = 3 if last_scorer == 1 else (-3 if last_scorer == 2 else rand_dx)
     self.dy = 2 if self.frame.y == 1 else -2
 
   def handle_player_collision(self, player):
@@ -224,4 +225,4 @@ class Ball:
     return self.frame.y <= 0
 
   def hit_bottom_wall(self):
-    return self.frame.y + self.frame.height >= COURT_HEIGHT
+    return self.frame.y + self.frame.height >= GAME_COURT_HEIGHT
