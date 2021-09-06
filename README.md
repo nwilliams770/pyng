@@ -1,8 +1,18 @@
-# To-do:
+# Pyng
++ A vector graphics inspired implementation of Pong. Play locally or against a friend over LAN. Built using [pyxel](https://github.com/kitao/pyxel).
 
-- Scoring, match start/stop, game complete
-- Add quit key to init func
-- accelerating paddles?
-- styling, intro screen, gameover text
-- networking
-- comet trail on ball?
+![Title screen gif](./assets/title_screen.gif)
+
+### Setup
++ Clone the repo
++ Install [pyxel](https://github.com/kitao/pyxel) & dependencies
++ From project directory run `python app.py`
+![Match](./assets/match.png)
+
+### LAN Match
++ Select "LAN Connect" from main menu
++ Enter your opponent's IP address displayed on the LAN connect menu
++ Pong till you drop!
+![Match](./assets/lan_connect_menu.png)
+
+
