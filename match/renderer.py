@@ -1,26 +1,50 @@
 import pyxel
 
 from match.constants import *
-from label import ray_label
+from label import ray_label, key_cap_label
 
-def draw_from_state(state):
+def draw_from_state(state, is_primary):
   pyxel.rect(0, 0, COURT_WIDTH, COURT_HEIGHT, COURT_COLOR)
-
+  print("is_primary", is_primary)
   phase = state['phase']
   if phase == 'starting':
-    render_starting(state)
+    render_starting(state, is_primary)
   elif phase == 'playing':
     render_playing(state)
   elif phase == 'end':
     render_end(state)
 
 
-def render_starting(state):
+def render_starting(state, is_primary):
   frame = state['frame']
+  lan_match = state.get('lan_match', False)
   starting_label_text = 'Starting in' if frame < 30 else '3' if frame < 60 else '2' if frame < 90 else '1'
   starting_label = ray_label.RayLabel(starting_label_text, size=16.0, colors=(4, 5), origin=(COURT_WIDTH / 2, 90), alignment=ray_label.Alignment.CENTER)
   starting_label.draw()
 
+  # P1 is always primary
+  if lan_match:
+    if is_primary:
+      up_key_cap = key_cap_label.KeyCapLabel(key_str="Q", key_code=pyxel.KEY_Q, size=4.0, origin=(93, COURT_HEIGHT-30), alignment=ray_label.Alignment.LEFT)
+      up_label = ray_label.RayLabel("Up", size=4.0, colors=(1, 1), origin=(93 + up_key_cap.width, COURT_HEIGHT-30), alignment=ray_label.Alignment.LEFT)
+      down_key_cap = key_cap_label.KeyCapLabel(key_str="A", key_code=pyxel.KEY_A, size=4.0, origin=(133, COURT_HEIGHT-30), alignment=ray_label.Alignment.LEFT)
+      down_label = ray_label.RayLabel("Down", size=4.0, colors=(1, 1), origin=(133 + down_key_cap.width, COURT_HEIGHT-30), alignment=ray_label.Alignment.LEFT)
+      color_label = ray_label.RayLabel("You:", size=4.0, colors=(1, 1), origin=(104, COURT_HEIGHT-10), alignment=ray_label.Alignment.LEFT)
+      color_text = ray_label.RayLabel("Yellow", size=4.0, colors=(6, 7), origin=(124, COURT_HEIGHT-10), alignment=ray_label.Alignment.LEFT)
+    else:
+      up_key_cap = key_cap_label.KeyCapLabel(key_str="O", key_code=pyxel.KEY_Q, size=4.0, origin=(93, COURT_HEIGHT-30), alignment=ray_label.Alignment.LEFT)
+      up_label = ray_label.RayLabel("Up", size=4.0, colors=(1, 1), origin=(93 + up_key_cap.width, COURT_HEIGHT-30), alignment=ray_label.Alignment.LEFT)
+      down_key_cap = key_cap_label.KeyCapLabel(key_str="L", key_code=pyxel.KEY_A, size=4.0, origin=(133, COURT_HEIGHT-30), alignment=ray_label.Alignment.LEFT)
+      down_label = ray_label.RayLabel("Down", size=4.0, colors=(1, 1), origin=(133 + down_key_cap.width, COURT_HEIGHT-30), alignment=ray_label.Alignment.LEFT)
+      color_label = ray_label.RayLabel("You:", size=4.0, colors=(1, 1), origin=(104, COURT_HEIGHT-10), alignment=ray_label.Alignment.LEFT)
+      color_text = ray_label.RayLabel("Blue", size=4.0, colors=(12, 13), origin=(124, COURT_HEIGHT-10), alignment=ray_label.Alignment.LEFT)
+
+    up_key_cap.draw()
+    up_label.draw()
+    down_key_cap.draw()
+    down_label.draw()
+    color_label.draw()
+    color_text.draw()
 
 def render_playing(state):
     _render_court()

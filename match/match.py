@@ -76,6 +76,7 @@ class Match():
       if self.match_phase == MatchPhase.STARTING:
         self.state = {'phase': 'starting', 'frame': self.frame}
         if isinstance(self.match_type, match_type.LANMultiplayer):
+          self.state['lan_match'] = True
           ok = self.send(self.state)
           if not ok:
             return
@@ -148,7 +149,7 @@ class Match():
     if not self.state:
       return
 
-    renderer.draw_from_state(self.state)
+    renderer.draw_from_state(self.state, self.is_primary)
 
     if self.state['phase'] == 'disconnected':
       pyxel.cls(0)
@@ -164,7 +165,6 @@ class Match():
 
     is_p1_local = True  # For now, even over LAN, p1 is always the primary
     is_p2_local = not isinstance(self.match_type, match_type.LANMultiplayer) or not self.multiplayer.is_primary
-    # TODO is_p2_ai
 
     if is_p1_local:
       if pyxel.btn(pyxel.KEY_Q) and pyxel.btn(pyxel.KEY_A):

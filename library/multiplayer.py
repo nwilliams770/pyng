@@ -85,7 +85,7 @@ class MultiplayerServer:
 
   def start(self):
     self.sock = socket.socket()
-    self.sock.bind(('127.0.0.1', self.port))
+    self.sock.bind(('0.0.0.0', self.port))
     self.sock.listen(1)
 
   def check_for_connection(self):

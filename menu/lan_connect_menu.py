@@ -59,7 +59,7 @@ class LANConnectMenu():
       if self.frame == 90:
         host = self.ip_input.value
         try:
-          self.multiplayer.connect(host='127.0.0.1', port=5001 if self.multiplayer.port == 5002 else 5002)
+          self.multiplayer.connect(host=host, port=5000)
           self.state = LanConnectMenuState.OPPONENT_FOUND
         except ConnectionError as e:
           print(e)
